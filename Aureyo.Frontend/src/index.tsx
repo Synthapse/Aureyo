@@ -17,14 +17,14 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <MainLayout>
-        <HashRouter>
+      <HashRouter>
+        <MainLayout>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
           </Routes>
-        </HashRouter>
-      </MainLayout>
+        </MainLayout>
+      </HashRouter>
     </ThemeProvider>
   </React.StrictMode>
 ); 
