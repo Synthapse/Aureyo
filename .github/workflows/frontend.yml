@@ -30,7 +30,6 @@ jobs:
       - uses: actions/checkout@v2
 
 # no config necessary
-
       # - name: Read config.json from VoiceSense.Front
       #   run: 'cat AuthenticScope.Frontend/src/config.json'
 
