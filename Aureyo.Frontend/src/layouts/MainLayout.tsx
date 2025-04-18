@@ -53,7 +53,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               >
                 How it Works
               </Button>
-              <Button 
+              {/* <Button 
                 variant="outlined" 
                 color="primary"
                 component={RouterLink}
@@ -63,7 +63,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 }}
               >
                 Sign In
-              </Button>
+              </Button> */}
               <Button 
                 variant="contained" 
                 color="primary"
