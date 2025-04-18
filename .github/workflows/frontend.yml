@@ -31,8 +31,8 @@ jobs:
 
 # no config necessary
 
-      - name: Read config.json from VoiceSense.Front
-        run: 'cat AuthenticScope.Frontend/src/config.json'
+      # - name: Read config.json from VoiceSense.Front
+      #   run: 'cat AuthenticScope.Frontend/src/config.json'
 
       - name: Build and deploy frontend to static GCP Cloud Storage
         run: |
