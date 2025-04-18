@@ -34,7 +34,7 @@ jobs:
       #   run: 'cat AuthenticScope.Frontend/src/config.json'
       - name: Build and deploy frontend to static GCP Cloud Storage
         run: |
-          cd ./AuthenticScope.Frontend/
+          cd ./Aureyo.Frontend/
           npm install --force
           CI=false npm run build
           gsutil web set -m index.html -e index.html gs://${{ env.BUCKET }}
