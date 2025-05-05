@@ -5,6 +5,7 @@ import { MarketingStrategyReport, EarlyAdaptersDesignReport, GoToMarketReport, R
 export interface Report {
   id: string;
   type: ReportType;
+  inputData: any;
   data: MarketingStrategyReport | EarlyAdaptersDesignReport | GoToMarketReport;
   createdAt: Date;
   status: 'completed' | 'pending' | 'failed';
@@ -20,6 +21,7 @@ export const getReports = async (): Promise<Report[]> => {
     return {
       id: doc.id,
       type: data.tab,
+      inputData: data.inputData,
       data: data.reportText,
       createdAt: (data.createdAt as Timestamp).toDate(),
       status: data.status,
@@ -41,6 +43,7 @@ export const getReportById = async (id: string): Promise<Report | null> => {
       id: reportDoc.id,
       type: data.tab,
       data: data.reportText,
+      inputData: data.inputData,
       createdAt: (data.createdAt as Timestamp).toDate(),
       status: data.status,
     };

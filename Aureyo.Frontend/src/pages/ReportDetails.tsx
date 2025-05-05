@@ -7,6 +7,8 @@ import {
   Button,
   CircularProgress,
   Alert,
+  List,
+  ListItem,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -46,7 +48,7 @@ const ReportDetails: React.FC = () => {
       setLoading(true);
       setError(null);
       const reportData = await getReportById(id);
-      
+
       if (!reportData) {
         setError('Report not found');
       } else {
@@ -90,6 +92,45 @@ const ReportDetails: React.FC = () => {
     );
   }
 
+  const parseStructuredText = (text: string) => {
+    const lines = text.trim().split('\n');
+    const sections: { header: string; subpoints: { title: string; desc: string }[] }[] = [];
+    let currentHeader: string | null = null;
+    let subpoints: { title: string; desc: string }[] = [];
+
+    const headerRegex = /^(?:\*\*|\d+\.|[IVXLCDM]+\.)\s*(.+?):?$/;
+    const subpointRegex = /^\*\s*(.+?):\s*(.*)$/;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      const headerMatch = trimmed.match(headerRegex);
+      const subpointMatch = trimmed.match(subpointRegex);
+
+      if (headerMatch) {
+        if (currentHeader && subpoints.length) {
+          sections.push({ header: currentHeader.replace("*", ""), subpoints });
+        }
+        currentHeader = headerMatch[1].trim().replace("*", "");
+        subpoints = [];
+      } else if (subpointMatch) {
+        subpoints.push({
+          title: subpointMatch[1].trim().replace("**", ""),
+          desc: subpointMatch[2].trim().replace("**", "").replace("*", ""),
+        });
+      }
+    }
+
+    if (currentHeader && subpoints.length) {
+      sections.push({ header: currentHeader.replace("*", ""), subpoints });
+    }
+
+    return sections.length > 0 ? sections : null;
+  };
+
+  console.log(report);
+
   return (
     <PageContainer>
       {renderBackButton()}
@@ -98,48 +139,89 @@ const ReportDetails: React.FC = () => {
         <Typography variant="h4" gutterBottom color="primary">
           {report.data.title}
         </Typography>
+        {report?.inputData && (
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              User data:
+            </Typography>
+            <List dense disablePadding>
+              {Object.entries(report.inputData).map(([key, value]) => (
+                <ListItem key={key} sx={{ display: 'list-item', pl: 2 }}>
+                  <Typography variant="body2">
+                    <>
+                      <strong>{key}:</strong> {value}
+                    </>
+                  </Typography>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        )}
+
+        <Box sx={{ mt: 6 }}>
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            Report Type
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            {report?.type?.split('-').map(word =>
+              word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ')}
+          </Typography>
+
+          <Typography variant="h6" color="text.secondary" gutterBottom sx={{ mt: 3 }}>
+            Created At
+          </Typography>
+          <Typography variant="body1">
+            {new Intl.DateTimeFormat('en-US', {
+              dateStyle: 'full',
+              timeStyle: 'long',
+            }).format(report?.createdAt)}
+          </Typography>
+        </Box>
+        <hr />
+
+
 
         <Box sx={{ mt: 4 }}>
-          {Object.entries(report.data).filter(([key]) => key !== 'title').map(([key, value]) => (
-            <Box key={key} sx={{ mb: 4 }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                {key.split('_').map(word => 
-                  word.charAt(0).toUpperCase() + word.slice(1)
-                ).join(' ')}
-              </Typography>
-              <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                {value as string}
-              </Typography>
-            </Box>
-          ))}
+          {Object.entries(report.data)
+            .filter(([key]) => key !== 'title')
+            .map(([key, value]) => {
+              const parsed = parseStructuredText(value as string);
 
-          <Box sx={{ mt: 6 }}>
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              Report Type
-            </Typography>
-            <Typography variant="body1" gutterBottom>
-              {report?.type?.split('-').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1)
-              ).join(' ')}
-            </Typography>
+              return (
+                <Box key={key} sx={{ mb: 4 }}>
+                  <Typography variant="h3" color="text.secondary" gutterBottom>
+                    {key
+                      .split('_')
+                      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                      .join(' ')}
+                  </Typography>
 
-            <Typography variant="h6" color="text.secondary" gutterBottom sx={{ mt: 3 }}>
-              Created At
-            </Typography>
-            <Typography variant="body1">
-              {new Intl.DateTimeFormat('en-US', {
-                dateStyle: 'full',
-                timeStyle: 'long',
-              }).format(report?.createdAt)}
-            </Typography>
-
-            <Typography variant="h6" color="text.secondary" gutterBottom sx={{ mt: 3 }}>
-              Status
-            </Typography>
-            <Typography variant="body1" sx={{ textTransform: 'capitalize' }}>
-              {report.status}
-            </Typography>
-          </Box>
+                  {parsed ? (
+                    parsed.map((section, idx) => (
+                      <Box key={idx} sx={{ mb: 2 }}>
+                        <Typography variant="h5" fontWeight="bold" gutterBottom>
+                          {section.header}
+                        </Typography>
+                        <List dense disablePadding>
+                          {section.subpoints.map((sp, i) => (
+                            <ListItem key={i} sx={{ display: 'list-item', pl: 2 }}>
+                              <Typography variant="body2">
+                                <strong>{sp.title}:</strong> {sp.desc}
+                              </Typography>
+                            </ListItem>
+                          ))}
+                        </List>
+                      </Box>
+                    ))
+                  ) : (
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                      {value as string}
+                    </Typography>
+                  )}
+                </Box>
+              );
+            })}
         </Box>
       </DetailsPaper>
     </PageContainer>
