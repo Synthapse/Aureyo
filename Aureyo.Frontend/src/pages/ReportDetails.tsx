@@ -9,11 +9,17 @@ import {
   Alert,
   List,
   ListItem,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Report, getReportById } from '../services/reportFirebaseService';
+import { parseStructuredTextWithTables } from 'utils';
 
 const PageContainer = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -92,42 +98,6 @@ const ReportDetails: React.FC = () => {
     );
   }
 
-  const parseStructuredText = (text: string) => {
-    const lines = text.trim().split('\n');
-    const sections: { header: string; subpoints: { title: string; desc: string }[] }[] = [];
-    let currentHeader: string | null = null;
-    let subpoints: { title: string; desc: string }[] = [];
-
-    const headerRegex = /^(?:\*\*|\d+\.|[IVXLCDM]+\.)\s*(.+?):?$/;
-    const subpointRegex = /^\*\s*(.+?):\s*(.*)$/;
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed) continue;
-
-      const headerMatch = trimmed.match(headerRegex);
-      const subpointMatch = trimmed.match(subpointRegex);
-
-      if (headerMatch) {
-        if (currentHeader && subpoints.length) {
-          sections.push({ header: currentHeader.replace("*", ""), subpoints });
-        }
-        currentHeader = headerMatch[1].trim().replace("*", "");
-        subpoints = [];
-      } else if (subpointMatch) {
-        subpoints.push({
-          title: subpointMatch[1].trim().replace("**", ""),
-          desc: subpointMatch[2].trim().replace("**", "").replace("*", ""),
-        });
-      }
-    }
-
-    if (currentHeader && subpoints.length) {
-      sections.push({ header: currentHeader.replace("*", ""), subpoints });
-    }
-
-    return sections.length > 0 ? sections : null;
-  };
 
   console.log(report);
 
@@ -186,7 +156,7 @@ const ReportDetails: React.FC = () => {
           {Object.entries(report.data)
             .filter(([key]) => key !== 'title')
             .map(([key, value]) => {
-              const parsed = parseStructuredText(value as string);
+              const parsed = parseStructuredTextWithTables(value as string);
 
               return (
                 <Box key={key} sx={{ mb: 4 }}>
@@ -197,24 +167,56 @@ const ReportDetails: React.FC = () => {
                       .join(' ')}
                   </Typography>
 
-                  {parsed ? (
-                    parsed.map((section, idx) => (
-                      <Box key={idx} sx={{ mb: 2 }}>
-                        <Typography variant="h5" fontWeight="bold" gutterBottom>
-                          {section.header}
-                        </Typography>
-                        <List dense disablePadding>
-                          {section.subpoints.map((sp, i) => (
-                            <ListItem key={i} sx={{ display: 'list-item', pl: 2 }}>
-                              <Typography variant="body2">
-                                <strong>{sp.title}:</strong> {sp.desc}
-                              </Typography>
-                            </ListItem>
+                  {/* Render Sections */}
+                  {parsed.sections.length > 0 && parsed.sections.map((section, idx) => (
+                    <Box key={idx} sx={{ mb: 2 }}>
+                      <Typography variant="h5" fontWeight="bold" gutterBottom>
+                        {section.header}
+                      </Typography>
+                      <List dense disablePadding>
+                        {section.subpoints.map((sp, i) => (
+                          <ListItem key={i} sx={{ display: 'list-item', pl: 2 }}>
+                            <Typography variant="body2">
+                              <strong>{sp.title}:</strong> {sp.desc}
+                            </Typography>
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Box>
+                  ))}
+
+                  {/* Render Tables */}
+                  {parsed.tables.length > 0 && parsed.tables.map((table, idx) => (
+                    <Box key={`table-${idx}`} sx={{ mb: 2 }}>
+                      <Typography variant="h5" fontWeight="bold" gutterBottom>
+                        {table.header || 'Table'} {/* Display table header */}
+                      </Typography>
+                      <Table sx={{ width: '100%' }}>
+                        <TableHead>
+                          <TableRow>
+                            {Object.keys(table.rows[0] || {}).map((header, i) => (
+                              <TableCell key={i} sx={{ fontWeight: 'bold' }}>
+                                {header}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {table.rows.map((row, rowIndex) => (
+                            <TableRow key={rowIndex}>
+                              {Object.values(row).map((cell, cellIndex) => (
+                                //@ts-ignore
+                                <TableCell key={cellIndex}>{cell}</TableCell>
+                              ))}
+                            </TableRow>
                           ))}
-                        </List>
-                      </Box>
-                    ))
-                  ) : (
+                        </TableBody>
+                      </Table>
+                    </Box>
+                  ))}
+
+                  {/* Fallback for raw text */}
+                  {!parsed.sections.length && !parsed.tables.length && (
                     <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                       {value as string}
                     </Typography>
