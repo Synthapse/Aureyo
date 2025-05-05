@@ -117,20 +117,11 @@ const Reports: React.FC = () => {
               </Typography>
               <Typography 
                 variant="h5" 
-                sx={{ color: 'text.secondary', maxWidth: 600 }}
+                sx={{ color: 'text.secondary'}}
               >
                 Create detailed reports for your marketing strategy, early adapters analysis, and go-to-market planning.
               </Typography>
             </Box>
-            <Button
-              component={RouterLink}
-              to="/reports/history"
-              variant="outlined"
-              startIcon={<HistoryIcon />}
-              sx={{ height: 'fit-content' }}
-            >
-              View History
-            </Button>
           </Box>
         </Container>
       </PageHeader>

@@ -68,6 +68,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               >
                 Reports
               </Button>
+              <Button 
+                color="inherit" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontWeight: 500,
+                  '&:hover': {
+                    color: 'primary.main',
+                    bgcolor: 'transparent',
+                  }
+                }}
+                component={RouterLink}
+                to="/reports/history"
+              >
+                View History
+              </Button>
               {/* <Button 
                 variant="outlined" 
                 color="primary"

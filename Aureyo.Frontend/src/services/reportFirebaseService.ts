@@ -19,7 +19,7 @@ export const getReports = async (): Promise<Report[]> => {
     const data = doc.data();
     return {
       id: doc.id,
-      type: data.type,
+      type: data.tab,
       data: data.reportText,
       createdAt: (data.createdAt as Timestamp).toDate(),
       status: data.status,
@@ -39,7 +39,7 @@ export const getReportById = async (id: string): Promise<Report | null> => {
     const data = reportDoc.data();
     return {
       id: reportDoc.id,
-      type: data.type,
+      type: data.tab,
       data: data.reportText,
       createdAt: (data.createdAt as Timestamp).toDate(),
       status: data.status,

@@ -131,7 +131,6 @@ const ReportsHistory: React.FC = () => {
                   <StyledTableCell>Title</StyledTableCell>
                   <StyledTableCell>Type</StyledTableCell>
                   <StyledTableCell>Created At</StyledTableCell>
-                  <StyledTableCell>Status</StyledTableCell>
                   <StyledTableCell align="right">Actions</StyledTableCell>
                 </TableRow>
               </TableHead>
@@ -150,13 +149,6 @@ const ReportsHistory: React.FC = () => {
                       ).join(' ')}
                     </TableCell>
                     <TableCell>{formatDate(report.createdAt)}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={report.status?.charAt(0).toUpperCase() + report.status?.slice(1)}
-                        color={getStatusColor(report.status)}
-                        size="small"
-                      />
-                    </TableCell>
                     <TableCell align="right">
                       <IconButton
                         color="primary"
