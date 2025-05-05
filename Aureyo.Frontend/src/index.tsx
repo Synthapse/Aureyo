@@ -6,6 +6,7 @@ import { CssBaseline } from '@mui/material';
 import MainLayout from 'layouts/MainLayout';
 import Home from 'pages/Home';
 import HowItWorks from 'pages/HowItWorks';
+import Reports from 'pages/Reports';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import theme from 'styles/theme';
 
@@ -22,6 +23,7 @@ root.render(
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/reports" element={<Reports />} />
           </Routes>
         </MainLayout>
       </HashRouter>

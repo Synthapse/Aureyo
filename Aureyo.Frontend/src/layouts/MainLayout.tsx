@@ -53,6 +53,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               >
                 How it Works
               </Button>
+              <Button 
+                color="inherit" 
+                sx={{ 
+                  color: 'text.secondary',
+                  fontWeight: 500,
+                  '&:hover': {
+                    color: 'primary.main',
+                    bgcolor: 'transparent',
+                  }
+                }}
+                component={RouterLink}
+                to="/reports"
+              >
+                Reports
+              </Button>
               {/* <Button 
                 variant="outlined" 
                 color="primary"
