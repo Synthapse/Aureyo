@@ -8,12 +8,17 @@ import {
   Alert, 
   Snackbar,
   CircularProgress,
-  Paper
+  Paper,
+  Button
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ReportForm from '../components/ReportForm';
 import { ReportType } from '../types/reports';
 import * as reportService from '../services/reportService';
+import { collection, addDoc, Timestamp } from "firebase/firestore";
+import { db } from '../firebase';
+import { Link as RouterLink } from 'react-router-dom';
+import HistoryIcon from '@mui/icons-material/History';
 
 const PageHeader = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
@@ -59,7 +64,19 @@ const Reports: React.FC = () => {
           response = await reportService.generateGoToMarketReport(data);
           break;
       }
+
+      //save to firebase
+      console.log(response)
+      console.log(response.text_content)
       
+      await addDoc(collection(db, "reports"), {
+        tab: activeTab,
+        inputData: data,
+        reportText: response.text_content || "",
+        createdAt: Timestamp.now(),
+      });
+
+
       setSnackbar({
         open: true,
         message: 'Report generated successfully!',
@@ -85,23 +102,36 @@ const Reports: React.FC = () => {
     <Box sx={{ bgcolor: 'background.default' }}>
       <PageHeader>
         <Container maxWidth="md">
-          <Typography 
-            variant="h2" 
-            component="h1" 
-            gutterBottom
-            sx={{ 
-              fontWeight: 700,
-              color: 'primary.main'
-            }}
-          >
-            Generate Reports
-          </Typography>
-          <Typography 
-            variant="h5" 
-            sx={{ color: 'text.secondary', maxWidth: 600, mx: 'auto' }}
-          >
-            Create detailed reports for your marketing strategy, early adapters analysis, and go-to-market planning.
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+            <Box>
+              <Typography 
+                variant="h2" 
+                component="h1" 
+                gutterBottom
+                sx={{ 
+                  fontWeight: 700,
+                  color: 'primary.main'
+                }}
+              >
+                Generate Reports
+              </Typography>
+              <Typography 
+                variant="h5" 
+                sx={{ color: 'text.secondary', maxWidth: 600 }}
+              >
+                Create detailed reports for your marketing strategy, early adapters analysis, and go-to-market planning.
+              </Typography>
+            </Box>
+            <Button
+              component={RouterLink}
+              to="/reports/history"
+              variant="outlined"
+              startIcon={<HistoryIcon />}
+              sx={{ height: 'fit-content' }}
+            >
+              View History
+            </Button>
+          </Box>
         </Container>
       </PageHeader>
 
