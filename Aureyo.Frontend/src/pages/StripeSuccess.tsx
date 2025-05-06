@@ -88,6 +88,7 @@ const StripeSuccess: React.FC = () => {
   const saveSubscription = (data: PaymentIntentSucceed) => {
     if (userId) {
       saveUserSubscription(userId, data);
+      setProcessingPayment(false);
     }
   }
 
