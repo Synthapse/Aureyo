@@ -1,8 +1,24 @@
-import React from 'react';
-import { Box, AppBar, Toolbar, Typography, Container, Button, useMediaQuery, useTheme } from '@mui/material';
+import React, { useState, ReactNode } from 'react';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Button, 
+  Container, 
+  Box, 
+  IconButton,
+  Menu,
+  MenuItem,
+  Avatar,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { Link as RouterLink } from 'react-router-dom';
+import { auth } from '../firebase';
+import { signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import MenuIcon from '@mui/icons-material/Menu';
 
 const Main = styled('main')(({ theme }) => ({
   flexGrow: 1,
@@ -10,109 +26,236 @@ const Main = styled('main')(({ theme }) => ({
   minHeight: '100vh',
 }));
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
+const LogoLink = styled(RouterLink)(({ theme }) => ({
+  textDecoration: 'none',
+  color: theme.palette.primary.main,
+  fontWeight: 700,
+  letterSpacing: '-0.5px',
+}));
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const NavLinks = styled('div')(({ theme }) => ({
+  display: 'flex',
+  gap: theme.spacing(2),
+  position: 'absolute',
+  left: '50%',
+  transform: 'translateX(-50%)',
+}));
+
+const NavLink = styled(RouterLink)(({ theme }) => ({
+  textDecoration: 'none',
+  color: theme.palette.text.secondary,
+  fontWeight: 500,
+  '&.active': {
+    color: theme.palette.primary.main,
+  },
+  '&:hover': {
+    color: theme.palette.primary.main,
+  },
+}));
+
+const Footer = styled('footer')(({ theme }) => ({
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.background.default,
+}));
+
+const FooterLink = styled('a')(({ theme }) => ({
+  textDecoration: 'none',
+  color: theme.palette.text.secondary,
+  '&:hover': {
+    textDecoration: 'underline',
+  },
+}));
+
+const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [mobileMenuAnchor, setMobileMenuAnchor] = useState<null | HTMLElement>(null);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const user = auth.currentUser;
+
+  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMobileMenuAnchor(event.currentTarget);
+  };
+
+  const handleMobileMenuClose = () => {
+    setMobileMenuAnchor(null);
+  };
+
+  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
+
+  const handleUserMenuClose = () => {
+    setUserMenuAnchor(null);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      navigate('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+    handleUserMenuClose();
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+    handleUserMenuClose();
+  };
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const navItems = [
+    { label: 'Home', path: '/' },
+    { label: 'Pricing', path: '/pricing' },
+    ...(user ? [
+      { label: 'Generate', path: '/reports' },
+      { label: 'Reports', path: '/reports/history' }
+    ] : [])
+  ];
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
-      <AppBar position="fixed" color="inherit">
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <AppBar position="static" color="default" elevation={0}>
         <Container maxWidth="lg">
-          <Toolbar sx={{ py: 1 }}>
-            <Typography 
-              variant="h6" 
-              component={RouterLink}
-              to="/"
-              sx={{ 
-                flexGrow: 1,
-                color: 'primary.main',
-                fontWeight: 700,
-                letterSpacing: '-0.5px',
-                textDecoration: 'none',
-              }}
-            >
-              Aureyo
-            </Typography>
-            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-              <Button 
-                color="inherit" 
+          <Toolbar disableGutters sx={{ position: 'relative' }}>
+            <LogoLink to="/">
+              <Typography 
+                variant="h5" 
+                component="div" 
                 sx={{ 
-                  color: 'text.secondary',
-                  fontWeight: 500,
-                  '&:hover': {
-                    color: 'primary.main',
-                    bgcolor: 'transparent',
-                  }
-                }}
-                component={RouterLink}
-                to="/how-it-works"
-              >
-                How it Works
-              </Button>
-              <Button 
-                color="inherit" 
-                sx={{ 
-                  color: 'text.secondary',
-                  fontWeight: 500,
-                  '&:hover': {
-                    color: 'primary.main',
-                    bgcolor: 'transparent',
-                  }
-                }}
-                component={RouterLink}
-                to="/reports"
-              >
-                Reports
-              </Button>
-              <Button 
-                color="inherit" 
-                sx={{ 
-                  color: 'text.secondary',
-                  fontWeight: 500,
-                  '&:hover': {
-                    color: 'primary.main',
-                    bgcolor: 'transparent',
-                  }
-                }}
-                component={RouterLink}
-                to="/reports/history"
-              >
-                View History
-              </Button>
-              {/* <Button 
-                variant="outlined" 
-                color="primary"
-                component={RouterLink}
-                to="/sign-in"
-                sx={{ 
-                  ml: 2,
+                  fontWeight: 700,
+                  color: 'primary.main',
+                  letterSpacing: '-0.5px'
                 }}
               >
-                Sign In
-              </Button> */}
-              <Button 
-                variant="contained" 
-                color="primary"
-                component="a"
-                href="https://form.typeform.com/to/EnZNgIf1"
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ ml: 1 }}
-                endIcon={<ArrowForwardIcon />}
-              >
-                Get Started
-              </Button>
-            </Box>
+                Aureyo
+              </Typography>
+            </LogoLink>
+
+            {isMobile ? (
+              <>
+                <Box sx={{ flexGrow: 1 }} />
+                <IconButton
+                  size="large"
+                  edge="end"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={handleMobileMenuOpen}
+                >
+                  <MenuIcon />
+                </IconButton>
+                <Menu
+                  anchorEl={mobileMenuAnchor}
+                  open={Boolean(mobileMenuAnchor)}
+                  onClose={handleMobileMenuClose}
+                >
+                  {navItems.map((item) => (
+                    <MenuItem 
+                      key={item.path} 
+                      component={RouterLink} 
+                      to={item.path}
+                      onClick={handleMobileMenuClose}
+                      selected={isActive(item.path)}
+                    >
+                      {item.label}
+                    </MenuItem>
+                  ))}
+                  {user ? (
+                    <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
+                  ) : (
+                    <MenuItem 
+                      component={RouterLink} 
+                      to="/"
+                      onClick={handleMobileMenuClose}
+                    >
+                      Sign In
+                    </MenuItem>
+                  )}
+                </Menu>
+              </>
+            ) : (
+              <>
+                <NavLinks>
+                  {navItems.map((item) => (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      className={isActive(item.path) ? 'active' : ''}
+                    >
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </NavLinks>
+                <Box sx={{ flexGrow: 1 }} />
+                {user ? (
+                  <>
+                    <IconButton
+                      onClick={handleUserMenuOpen}
+                      size="small"
+                      sx={{ ml: 2 }}
+                    >
+                      <Avatar 
+                        src={user.photoURL || undefined}
+                        alt={user.displayName || 'User'}
+                        sx={{ width: 32, height: 32 }}
+                      />
+                    </IconButton>
+                    <Menu
+                      anchorEl={userMenuAnchor}
+                      open={Boolean(userMenuAnchor)}
+                      onClose={handleUserMenuClose}
+                    >
+                      <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+                      <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
+                    </Menu>
+                  </>
+                ) : (
+                  <Button 
+                    component={RouterLink} 
+                    to="/"
+                    variant="contained" 
+                    color="primary"
+                  >
+                    Sign In
+                  </Button>
+                )}
+              </>
+            )}
           </Toolbar>
         </Container>
       </AppBar>
-      <Main>
+
+      <Box component="main" sx={{ flexGrow: 1 }}>
         {children}
-      </Main>
+      </Box>
+
+      <Footer>
+        <Container maxWidth="lg">
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 2
+          }}>
+            <Typography variant="body2" color="text.secondary">
+              © 2024 Aureyo. All rights reserved.
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 3 }}>
+              <FooterLink href="#" target="_blank" rel="noopener noreferrer">
+                Privacy Policy
+              </FooterLink>
+              <FooterLink href="#" target="_blank" rel="noopener noreferrer">
+                Terms of Service
+              </FooterLink>
+            </Box>
+          </Box>
+        </Container>
+      </Footer>
     </Box>
   );
 };

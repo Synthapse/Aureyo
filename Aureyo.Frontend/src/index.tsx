@@ -9,6 +9,8 @@ import HowItWorks from 'pages/HowItWorks';
 import Reports from 'pages/Reports';
 import ReportsHistory from 'pages/ReportsHistory';
 import ReportDetails from 'pages/ReportDetails';
+import Pricing from 'pages/Pricing';
+import Profile from 'pages/Profile';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import theme from 'styles/theme';
 
@@ -28,6 +30,8 @@ root.render(
             <Route path="/reports" element={<Reports />} />
             <Route path="/reports/history" element={<ReportsHistory />} />
             <Route path="/reports/:id" element={<ReportDetails />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </MainLayout>
       </HashRouter>

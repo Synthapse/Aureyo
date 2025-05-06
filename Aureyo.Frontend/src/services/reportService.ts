@@ -9,7 +9,7 @@ export const generateMarketingStrategyReport = async (data: MarketingStrategyRep
 };
 
 export const generateEarlyAdaptersReport = async (data: EarlyAdaptersDesignReport) => {
-  const response = await axios.post(`${API_BASE_URL}/early-adapters`, data);
+  const response = await axios.post(`${API_BASE_URL}/early-adopter-strategy`, data);
   return response.data;
 };
 

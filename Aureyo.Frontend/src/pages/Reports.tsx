@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Container, 
   Typography, 
@@ -9,16 +9,20 @@ import {
   Snackbar,
   CircularProgress,
   Paper,
-  Button
+  Button,
+  Chip,
+  Tooltip
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ReportForm from '../components/ReportForm';
 import { ReportType } from '../types/reports';
 import * as reportService from '../services/reportService';
-import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { db } from '../firebase';
+import { collection, addDoc, Timestamp, doc, getDoc, updateDoc, increment } from "firebase/firestore";
+import { db, auth } from '../firebase';
 import { Link as RouterLink } from 'react-router-dom';
 import HistoryIcon from '@mui/icons-material/History';
+import StarsIcon from '@mui/icons-material/Stars';
+import { addUserActivity } from '../services/userActivityService';
 
 const PageHeader = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
@@ -28,18 +32,71 @@ const PageHeader = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
+const PointCostChip = styled(Chip)(({ theme }) => ({
+  marginLeft: theme.spacing(1),
+  backgroundColor: 'rgba(255, 215, 0, 0.1)',
+  color: '#B8860B',
+  fontWeight: 600,
+  '& .MuiChip-icon': {
+    color: '#FFD700',
+  },
+}));
+
+// Define point costs for each report type
+const REPORT_COSTS = {
+  'marketing-strategy': 3,
+  'early-adapters': 2,
+  'go-to-market': 2
+};
+
 const Reports: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ReportType>('marketing-strategy');
   const [loading, setLoading] = useState(false);
+  const [userPoints, setUserPoints] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
-    severity: 'success' | 'error';
+    severity: 'success' | 'error' | 'warning';
   }>({
     open: false,
     message: '',
     severity: 'success',
   });
+
+  useEffect(() => {
+    const fetchUserPoints = async () => {
+      setIsLoading(true);
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          // Fetch user data from Firestore to get available points
+          const userRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userRef);
+          
+          if (userDoc.exists()) {
+            setUserPoints(userDoc.data().points || 0);
+          } else {
+            // If user document doesn't exist, create it with 0 points
+            await updateDoc(userRef, {
+              points: 0
+            });
+            setUserPoints(0);
+          }
+        } catch (error) {
+          console.error("Error fetching user points:", error);
+          setSnackbar({
+            open: true,
+            message: 'Error retrieving points balance',
+            severity: 'error',
+          });
+        }
+      }
+      setIsLoading(false);
+    };
+
+    fetchUserPoints();
+  }, []);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: ReportType) => {
     setActiveTab(newValue);
@@ -49,7 +106,33 @@ const Reports: React.FC = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const getReportTitle = (type: ReportType, data: any) => {
+    switch (type) {
+      case 'marketing-strategy':
+        return `Marketing Strategy for ${data.targetAudience || 'Target Audience'}`;
+      case 'go-to-market':
+        return `Go-to-Market Plan for ${data.productName || 'Product'}`;
+      case 'early-adapters':
+        return `Early Adopters Analysis for ${data.targetMarket || 'Target Market'}`;
+      default:
+        return 'Report';
+    }
+  };
+
+  const hasEnoughPoints = () => {
+    return userPoints >= REPORT_COSTS[activeTab];
+  };
+
   const handleSubmit = async (data: any) => {
+    if (!hasEnoughPoints()) {
+      setSnackbar({
+        open: true,
+        message: `Not enough points. You need ${REPORT_COSTS[activeTab]} points to generate this report.`,
+        severity: 'warning',
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       let response;
@@ -65,26 +148,41 @@ const Reports: React.FC = () => {
           break;
       }
 
-      //save to firebase
-      console.log(response)
-      console.log(response.text_content)
-      
+      // Save report to Firebase
       await addDoc(collection(db, "reports"), {
         tab: activeTab,
         inputData: data,
         reportText: response.text_content || "",
         createdAt: Timestamp.now(),
+        status: 'completed'
       });
+      
 
+      // Add user activity
+      const user = auth.currentUser;
+      if (user) {
+        await addUserActivity({
+          userId: user.uid,
+          type: activeTab,
+          title: getReportTitle(activeTab, data),
+          status: 'completed'
+        });
+
+        // Deduct points from user's account
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, {
+          points: increment(-REPORT_COSTS[activeTab])
+        });
+
+        // Update local state with new points balance
+        setUserPoints(prevPoints => prevPoints - REPORT_COSTS[activeTab]);
+      }
 
       setSnackbar({
         open: true,
         message: 'Report generated successfully!',
         severity: 'success',
       });
-      
-      // Here you might want to handle the response, such as downloading the report
-      console.log('Report generated:', response);
       
     } catch (error) {
       setSnackbar({
@@ -123,6 +221,33 @@ const Reports: React.FC = () => {
               </Typography>
             </Box>
           </Box>
+          
+          <Box display="flex" alignItems="center" justifyContent="center" mb={2}>
+            <Typography variant="h6" sx={{ mr: 2 }}>Your Points:</Typography>
+            <Chip
+              icon={<StarsIcon />}
+              label={isLoading ? "Loading..." : userPoints}
+              sx={{
+                backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                color: '#B8860B',
+                fontWeight: 600,
+                '& .MuiChip-icon': {
+                  color: '#FFD700',
+                },
+                fontSize: '1.2rem',
+                px: 1
+              }}
+            />
+            <Button 
+              component={RouterLink} 
+              to="/pricing" 
+              variant="outlined" 
+              sx={{ ml: 2 }}
+              size="small"
+            >
+              Get More Points
+            </Button>
+          </Box>
         </Container>
       </PageHeader>
 
@@ -136,22 +261,68 @@ const Reports: React.FC = () => {
             sx={{ borderBottom: 1, borderColor: 'divider' }}
           >
             <Tab 
-              label="Marketing Strategy" 
+              label={
+                <Box display="flex" alignItems="center">
+                  Marketing Strategy
+                  <PointCostChip 
+                    size="small" 
+                    icon={<StarsIcon />} 
+                    label={REPORT_COSTS['marketing-strategy']} 
+                  />
+                </Box>
+              }
               value="marketing-strategy"
               sx={{ py: 2 }}
             />
             <Tab 
-              label="Early Adapters" 
+              label={
+                <Box display="flex" alignItems="center">
+                  Early Adapters
+                  <PointCostChip 
+                    size="small" 
+                    icon={<StarsIcon />} 
+                    label={REPORT_COSTS['early-adapters']} 
+                  />
+                </Box>
+              }
               value="early-adapters"
               sx={{ py: 2 }}
             />
             <Tab 
-              label="Go to Market" 
+              label={
+                <Box display="flex" alignItems="center">
+                  Go to Market
+                  <PointCostChip 
+                    size="small" 
+                    icon={<StarsIcon />} 
+                    label={REPORT_COSTS['go-to-market']} 
+                  />
+                </Box>
+              }
               value="go-to-market"
               sx={{ py: 2 }}
             />
           </Tabs>
         </Paper>
+
+        {!hasEnoughPoints() && (
+          <Alert 
+            severity="warning" 
+            sx={{ mb: 3 }}
+            action={
+              <Button 
+                color="inherit" 
+                size="small" 
+                component={RouterLink} 
+                to="/pricing"
+              >
+                Get Points
+              </Button>
+            }
+          >
+            You need {REPORT_COSTS[activeTab]} points to generate this report. Your current balance: {userPoints} points.
+          </Alert>
+        )}
 
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
@@ -161,6 +332,7 @@ const Reports: React.FC = () => {
           <ReportForm
             type={activeTab}
             onSubmit={handleSubmit}
+            disabled={!hasEnoughPoints()}
           />
         )}
       </Container>

@@ -6,6 +6,7 @@ import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 type ReportFormProps = {
   type: ReportType;
   onSubmit: (data: MarketingStrategyReport | EarlyAdaptersDesignReport | GoToMarketReport) => void;
+  disabled?: boolean;
 };
 
 const sampleData = {
@@ -92,8 +93,13 @@ const getFormFields = (type: ReportType) => {
   }
 };
 
-const ReportForm: React.FC<ReportFormProps> = ({ type, onSubmit }) => {
+const ReportForm: React.FC<ReportFormProps> = ({ type, onSubmit, disabled = false }) => {
   const [formData, setFormData] = useState(getInitialFormData(type));
+  
+  // Update form data when type changes
+  React.useEffect(() => {
+    setFormData(getInitialFormData(type));
+  }, [type]);
 
   const handleChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -104,11 +110,18 @@ const ReportForm: React.FC<ReportFormProps> = ({ type, onSubmit }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    if (!disabled) {
+      onSubmit(formData);
+    }
+    // Not clearing the form data here, so it's preserved if there's an error
   };
 
   const fillWithExample = () => {
     setFormData(sampleData[type]);
+  };
+
+  const clearForm = () => {
+    setFormData(getInitialFormData(type));
   };
 
   const fields = getFormFields(type);
@@ -120,15 +133,28 @@ const ReportForm: React.FC<ReportFormProps> = ({ type, onSubmit }) => {
         <Typography variant="h5" component="h2">
           {formTitle} Report
         </Typography>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<AutoFixHighIcon />}
-          onClick={fillWithExample}
-          size="small"
-        >
-          Fill with Example
-        </Button>
+        <Box>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<AutoFixHighIcon />}
+            onClick={fillWithExample}
+            size="small"
+            sx={{ mr: 1 }}
+            disabled={disabled}
+          >
+            Fill with Example
+          </Button>
+          <Button
+            variant="text"
+            color="secondary"
+            onClick={clearForm}
+            size="small"
+            disabled={disabled}
+          >
+            Clear
+          </Button>
+        </Box>
       </Box>
       <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {fields.map(field => (
@@ -141,6 +167,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ type, onSubmit }) => {
             required
             multiline={field.name !== 'title'}
             rows={field.name !== 'title' ? 3 : 1}
+            disabled={disabled}
           />
         ))}
         <Button
@@ -148,6 +175,7 @@ const ReportForm: React.FC<ReportFormProps> = ({ type, onSubmit }) => {
           variant="contained"
           color="primary"
           sx={{ mt: 2 }}
+          disabled={disabled}
         >
           Generate Report
         </Button>

@@ -80,7 +80,7 @@ const ReportsHistory: React.FC = () => {
 
   return (
     <Box sx={{ bgcolor: 'background.default' }}>
-      <Box sx={{ position: 'absolute', top: 20, left: 20 }}>
+      {/* <Box sx={{ position: 'absolute', top: 20, left: 20 }}>
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate(-1)}
@@ -94,7 +94,7 @@ const ReportsHistory: React.FC = () => {
         >
           Back
         </Button>
-      </Box>
+      </Box> */}
 
       <PageHeader>
         <Container maxWidth="md">

@@ -1,9 +1,9 @@
-import React from 'react';
-import { 
-  Typography, 
-  Grid, 
-  Box, 
-  Button, 
+import React, { useEffect } from 'react';
+import {
+  Typography,
+  Grid,
+  Box,
+  Button,
   Container,
   Card,
   CardContent,
@@ -19,6 +19,9 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import { auth, googleProvider } from '../firebase';
+import { setPersistence, browserLocalPersistence, signInWithPopup, fetchSignInMethodsForEmail, onAuthStateChanged } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 
 const fadeIn = keyframes`
   from {
@@ -65,7 +68,7 @@ const HeroSubText = styled(Typography)(({ theme }) => ({
   opacity: 0,
 }));
 
-const HeroButton = styled(Button)(({ theme }) => ({
+export const HeroButton = styled(Button)(({ theme }) => ({
   animation: `${fadeIn} 1s ease-out 0.4s forwards`,
   opacity: 0,
 }));
@@ -123,8 +126,51 @@ const FeatureItem = styled(Box)(({ theme }) => ({
 }));
 
 const Home: React.FC = () => {
+
+  const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [logged, setLogged] = React.useState(false);
+
+  // Listen for authentication state changes
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setLogged(true)
+    } else {
+      setLogged(false)
+    }
+  });
+
+  const signInWithGoogle = async () => {
+    try {
+      setPersistence(auth, browserLocalPersistence)
+        .then(async () => {
+          const signInCredentials = await signInWithPopup(auth, googleProvider);
+
+          // Get the user's email
+          const userEmail = signInCredentials.user.email;
+
+          if (userEmail) {
+            const signInMethods = await fetchSignInMethodsForEmail(auth, userEmail);
+            const hasPassword = signInMethods.includes("password");
+
+            if (auth) {
+              navigate('/profile')
+            }
+          }
+
+          return signInCredentials;
+        })
+        .catch((error) => {
+          // Handle Errors here.
+          const errorCode = error.code;
+          const errorMessage = error.message;
+        });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <Box sx={{ bgcolor: 'background.default', color: 'text.primary' }}>
@@ -134,9 +180,9 @@ const Home: React.FC = () => {
           <Grid container spacing={6} alignItems="center">
             <Grid item xs={12} md={7}>
               <Box sx={{ position: 'relative', zIndex: 1 }}>
-                <GradientText 
-                  variant="h1" 
-                  sx={{ 
+                <GradientText
+                  variant="h1"
+                  sx={{
                     fontSize: isMobile ? '2.8rem' : '4rem',
                     fontWeight: 800,
                     mb: 3,
@@ -146,9 +192,9 @@ const Home: React.FC = () => {
                 >
                   Unlock Audience Insights Instantly
                 </GradientText>
-                <HeroSubText 
-                  variant="h5" 
-                  sx={{ 
+                <HeroSubText
+                  variant="h5"
+                  sx={{
                     mb: 5,
                     fontWeight: 400,
                     maxWidth: '550px',
@@ -157,16 +203,12 @@ const Home: React.FC = () => {
                   Aureyo leverages AI to deliver deep market understanding and competitive analysis, empowering your marketing strategy.
                 </HeroSubText>
                 <Box sx={{ display: 'flex', gap: 2, mb: 6 }}>
-                  <a 
-                    href="https://form.typeform.com/to/EnZNgIf1" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    style={{ textDecoration: 'none' }}
-                  >
-                    <HeroButton 
-                      variant="contained" 
+                  {!logged ? (
+                    <HeroButton
+                      variant="contained"
                       color="primary"
-                      sx={{ 
+                      onClick={signInWithGoogle}
+                      sx={{
                         fontWeight: 700,
                         fontSize: '1rem',
                         padding: '12px 28px',
@@ -178,13 +220,16 @@ const Home: React.FC = () => {
                       size="large"
                       endIcon={<ArrowForwardIcon />}
                     >
-                      Get Started Free
+                      Sign in
                     </HeroButton>
-                  </a>
-                  <HeroButton 
-                    variant="outlined" 
+                  ) : (
+                    <>
+                    </>
+                  )}
+                  <HeroButton
+                    variant="outlined"
                     color="secondary"
-                    sx={{ 
+                    sx={{
                       fontWeight: 600,
                       transition: 'background-color 0.2s ease, border-color 0.2s ease',
                       '&:hover': {
@@ -197,7 +242,7 @@ const Home: React.FC = () => {
                     How it Works
                   </HeroButton>
                 </Box>
-                
+
                 <HeroFeatureList>
                   <FeatureList>
                     <FeatureItem>
@@ -218,12 +263,12 @@ const Home: React.FC = () => {
             </Grid>
             <Grid item xs={12} md={5}>
               <HeroImageWrapper>
-                <Box 
-                  component="img" 
+                <Box
+                  component="img"
                   src="https://images.unsplash.com/photo-1550613095-bb19738b8b4b?q=80&w=2310&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                   alt="Futuristic Marketing Research Speed"
-                  sx={{ 
-                    width: '100%', 
+                  sx={{
+                    width: '100%',
                     height: 'auto',
                     display: 'block',
                   }}
@@ -237,17 +282,17 @@ const Home: React.FC = () => {
       {/* Features Section */}
       <Container maxWidth="lg" sx={{ py: 15 }}>
         <Box sx={{ textAlign: 'center', mb: 10 }}>
-          <GradientText 
-            variant="h2" 
+          <GradientText
+            variant="h2"
             sx={{ fontWeight: 700, mb: 2 }}
           >
             Powerful Features for Marketing Research
           </GradientText>
-          <Typography 
-            variant="h5" 
+          <Typography
+            variant="h5"
             color="text.secondary"
-            sx={{ 
-              maxWidth: 800, 
+            sx={{
+              maxWidth: 800,
               mx: 'auto',
             }}
           >
@@ -320,44 +365,44 @@ const Home: React.FC = () => {
       </Container>
 
       {/* CTA Section */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           py: 10,
           bgcolor: 'background.paper',
           borderTop: `1px solid ${theme.palette.divider}`,
         }}
       >
         <Container maxWidth="md">
-          <Box 
-            sx={{ 
+          <Box
+            sx={{
               textAlign: 'center',
             }}
           >
-            <Typography 
-              variant="h3" 
+            <Typography
+              variant="h3"
               sx={{ fontWeight: 700, color: 'text.primary' }}
             >
               Ready to Transform Your Marketing Research?
             </Typography>
-            <Typography 
-              variant="h6" 
+            <Typography
+              variant="h6"
               color="text.secondary"
-              sx={{ 
-                mb: 4, 
-                maxWidth: 600, 
+              sx={{
+                mb: 4,
+                maxWidth: 600,
                 mx: 'auto',
               }}
             >
               Join thousands of marketers who are already using Aureyo to make better decisions.
             </Typography>
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               color="primary"
               component="a"
-              href="https://form.typeform.com/to/EnZNgIf1" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              sx={{ 
+              href="https://form.typeform.com/to/EnZNgIf1"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
                 fontWeight: 600,
                 px: 4,
                 py: 1.5,
@@ -403,4 +448,31 @@ const Home: React.FC = () => {
   );
 };
 
-export default Home; 
+export default Home;
+
+
+
+{/* <a 
+href="https://form.typeform.com/to/EnZNgIf1" 
+target="_blank" 
+rel="noopener noreferrer" 
+style={{ textDecoration: 'none' }}
+>
+<HeroButton 
+  variant="contained" 
+  color="primary"
+  sx={{ 
+    fontWeight: 700,
+    fontSize: '1rem',
+    padding: '12px 28px',
+    transition: 'transform 0.2s ease',
+    '&:hover': {
+      transform: 'scale(1.05)',
+    }
+  }}
+  size="large"
+  endIcon={<ArrowForwardIcon />}
+>
+  Get Started Free
+</HeroButton>
+</a> */}
