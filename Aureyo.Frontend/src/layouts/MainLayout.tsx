@@ -16,7 +16,7 @@ import {
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
 import { auth } from '../firebase';
-import { signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 
@@ -108,10 +108,23 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const [logged, setLogged] = React.useState(false);
+
+  // Listen for authentication state changes
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setLogged(true)
+    } else {
+      setLogged(false)
+    }
+  });
+
+
+
   const navItems = [
     { label: 'Home', path: '/' },
     { label: 'Pricing', path: '/pricing' },
-    ...(user ? [
+    ...(logged ? [
       { label: 'Generate', path: '/reports' },
       { label: 'Reports', path: '/reports/history' }
     ] : [])
