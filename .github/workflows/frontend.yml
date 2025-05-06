@@ -33,7 +33,7 @@ jobs:
 
       - uses: microsoft/variable-substitution@v1
         with:
-          files: 'AuthenticScope.Frontend/src/config.json'
+          files: 'Aureyo.Frontend/src/config.json'
         env:
           apps.PaymentAPI.url: ${{ env.PAYMENT_API_URL }}
           apps.RaportingAPI.url: ${{ env.RAPORTING_API_URL }}
