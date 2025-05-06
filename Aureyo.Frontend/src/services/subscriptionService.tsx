@@ -2,7 +2,7 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase'; 
 import { PaymentIntentSucceed } from 'pages/StripeSuccess';
 
-export const saveUserSubscription = async (userEmail: string, data: PaymentIntentSucceed) => {
+export const saveUserSubscription = async (userEmail: string, data: any) => {
     const userRef = doc(db, 'users', userEmail);
     const userDoc = await getDoc(userRef);
 

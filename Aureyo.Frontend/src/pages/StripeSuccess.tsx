@@ -28,7 +28,6 @@ export interface PaymentIntentSucceed {
   products: any;
 }
 
-
 const SuccessContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(6),
   display: 'flex',
@@ -87,8 +86,19 @@ const StripeSuccess: React.FC = () => {
 
   const saveSubscription = (userEmail: string, data: PaymentIntentSucceed) => {
 
-      console.log(`Save data for ${userEmail}, with ${data}`)
-      saveUserSubscription(userEmail, data);
+      const subscriptionData = {
+        id: data.id,
+        created: data.created,
+        amountTotal: data.amount,
+        currency: data.currency,
+        customerEmail: data.customerEmail,
+        customerId: data.customerId,
+        description: data.products[0].description,
+        quantity: data.products[0].quantity, 
+      }
+
+      console.log(`Save data for ${userEmail}, with ${subscriptionData}`)
+      saveUserSubscription(userEmail, subscriptionData);
       setProcessingPayment(false);
   }
 
