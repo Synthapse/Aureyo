@@ -58,6 +58,7 @@ const StripeSuccess: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  
   useEffect(() => {
     const processPayment = async () => {
       try {
@@ -99,7 +100,6 @@ const StripeSuccess: React.FC = () => {
       }
     };
 
-    // Simulate network delay
     const timer = setTimeout(() => {
       processPayment();
     }, 2000);

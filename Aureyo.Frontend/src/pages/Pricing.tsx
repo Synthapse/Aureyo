@@ -116,10 +116,12 @@ const Pricing: React.FC = () => {
   const startPayment = () => {
     const data = {
       Url: window.location.href.toString(),
-      Email: userEmail
+      Email: userEmail,
+      Points: selectedPoints,
+      Price: calculatePrice(selectedPoints)
     }
 
-    axios.post(`${config.apps.PaymentAPI.url}/Payment/checkoutSession`, data)
+    axios.post(`${config.apps.PaymentAPI.url}/Payment/buyAureyoPoints`, data)
       .then(response => {
         // Handle success
         console.log(response);
