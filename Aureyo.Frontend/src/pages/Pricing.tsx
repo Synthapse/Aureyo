@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -167,14 +167,16 @@ const Pricing: React.FC = () => {
 
   const [logged, setLogged] = React.useState(false);
 
-  // Listen for authentication state changes
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setLogged(true)
-    } else {
-      setLogged(false)
-    }
-  });
+  useEffect(() => {
+    // Listen for authentication state changes
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setLogged(true)
+      } else {
+        setLogged(false)
+      }
+    });
+  }, []);
 
   return (
     <Box sx={{ bgcolor: 'background.default', py: 8 }}>

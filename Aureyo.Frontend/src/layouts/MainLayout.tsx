@@ -1,11 +1,11 @@
-import React, { useState, ReactNode } from 'react';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
-  Container, 
-  Box, 
+import React, { useState, ReactNode, useEffect } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Container,
+  Box,
   IconButton,
   Menu,
   MenuItem,
@@ -110,14 +110,16 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   const [logged, setLogged] = React.useState(false);
 
-  // Listen for authentication state changes
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setLogged(true)
-    } else {
-      setLogged(false)
-    }
-  });
+  useEffect(() => {
+    // Listen for authentication state changes
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setLogged(true)
+      } else {
+        setLogged(false)
+      }
+    });
+  }, []);
 
 
 
@@ -136,10 +138,10 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ position: 'relative' }}>
             <LogoLink to="/">
-              <Typography 
-                variant="h5" 
-                component="div" 
-                sx={{ 
+              <Typography
+                variant="h5"
+                component="div"
+                sx={{
                   fontWeight: 700,
                   color: 'primary.main',
                   letterSpacing: '-0.5px'
@@ -167,9 +169,9 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
                   onClose={handleMobileMenuClose}
                 >
                   {navItems.map((item) => (
-                    <MenuItem 
-                      key={item.path} 
-                      component={RouterLink} 
+                    <MenuItem
+                      key={item.path}
+                      component={RouterLink}
                       to={item.path}
                       onClick={handleMobileMenuClose}
                       selected={isActive(item.path)}
@@ -180,8 +182,8 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
                   {user ? (
                     <MenuItem onClick={handleSignOut}>Sign Out</MenuItem>
                   ) : (
-                    <MenuItem 
-                      component={RouterLink} 
+                    <MenuItem
+                      component={RouterLink}
                       to="/"
                       onClick={handleMobileMenuClose}
                     >
@@ -211,7 +213,7 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
                       size="small"
                       sx={{ ml: 2 }}
                     >
-                      <Avatar 
+                      <Avatar
                         src={user.photoURL || undefined}
                         alt={user.displayName || 'User'}
                         sx={{ width: 32, height: 32 }}
@@ -227,10 +229,10 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
                     </Menu>
                   </>
                 ) : (
-                  <Button 
-                    component={RouterLink} 
+                  <Button
+                    component={RouterLink}
                     to="/"
-                    variant="contained" 
+                    variant="contained"
                     color="primary"
                   >
                     Sign In
@@ -248,8 +250,8 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
 
       <Footer>
         <Container maxWidth="lg">
-          <Box sx={{ 
-            display: 'flex', 
+          <Box sx={{
+            display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             flexWrap: 'wrap',

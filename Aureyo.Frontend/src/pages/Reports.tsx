@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Typography, 
-  Box, 
-  Tabs, 
-  Tab, 
-  Alert, 
+import {
+  Container,
+  Typography,
+  Box,
+  Tabs,
+  Tab,
+  Alert,
   Snackbar,
   CircularProgress,
   Paper,
@@ -23,6 +23,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import HistoryIcon from '@mui/icons-material/History';
 import StarsIcon from '@mui/icons-material/Stars';
 import { addUserActivity } from '../services/userActivityService';
+import { getUserPointsFromSubscription, removePointsFromSubscription } from 'services/subscriptionService';
 
 const PageHeader = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
@@ -50,6 +51,8 @@ const REPORT_COSTS = {
 };
 
 const Reports: React.FC = () => {
+
+  const userEmail = auth.currentUser?.email;
   const [activeTab, setActiveTab] = useState<ReportType>('marketing-strategy');
   const [loading, setLoading] = useState(false);
   const [userPoints, setUserPoints] = useState<number>(0);
@@ -65,38 +68,19 @@ const Reports: React.FC = () => {
   });
 
   useEffect(() => {
-    const fetchUserPoints = async () => {
-      setIsLoading(true);
-      const user = auth.currentUser;
-      if (user) {
-        try {
-          // Fetch user data from Firestore to get available points
-          const userRef = doc(db, "users", user.uid);
-          const userDoc = await getDoc(userRef);
-          
-          if (userDoc.exists()) {
-            setUserPoints(userDoc.data().points || 0);
-          } else {
-            // If user document doesn't exist, create it with 0 points
-            await updateDoc(userRef, {
-              points: 0
-            });
-            setUserPoints(0);
-          }
-        } catch (error) {
-          console.error("Error fetching user points:", error);
-          setSnackbar({
-            open: true,
-            message: 'Error retrieving points balance',
-            severity: 'error',
-          });
-        }
-      }
-      setIsLoading(false);
-    };
-
-    fetchUserPoints();
+    fetchPoints();
   }, []);
+
+  const fetchPoints = () => {
+
+    getUserPointsFromSubscription(userEmail ?? "").then((points) => {
+      setUserPoints(points);
+      setIsLoading(false); // Set loading to false after fetching points
+    }).catch((error) => {
+      console.error('Error fetching points:', error);
+      return 0; // Default to 0 points on error
+    });
+  }
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: ReportType) => {
     setActiveTab(newValue);
@@ -156,7 +140,7 @@ const Reports: React.FC = () => {
         createdAt: Timestamp.now(),
         status: 'completed'
       });
-      
+
 
       // Add user activity
       const user = auth.currentUser;
@@ -169,10 +153,13 @@ const Reports: React.FC = () => {
         });
 
         // Deduct points from user's account
-        const userRef = doc(db, "users", user.uid);
-        await updateDoc(userRef, {
-          points: increment(-REPORT_COSTS[activeTab])
+
+        removePointsFromSubscription(userEmail ?? "", REPORT_COSTS[activeTab]).then(() => {
+          console.log('Points deducted successfully.');
+        }).catch((error) => {
+          console.error('Error deducting points:', error);
         });
+
 
         // Update local state with new points balance
         setUserPoints(prevPoints => prevPoints - REPORT_COSTS[activeTab]);
@@ -183,7 +170,7 @@ const Reports: React.FC = () => {
         message: 'Report generated successfully!',
         severity: 'success',
       });
-      
+
     } catch (error) {
       setSnackbar({
         open: true,
@@ -202,26 +189,26 @@ const Reports: React.FC = () => {
         <Container maxWidth="md">
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
             <Box>
-              <Typography 
-                variant="h2" 
-                component="h1" 
+              <Typography
+                variant="h2"
+                component="h1"
                 gutterBottom
-                sx={{ 
+                sx={{
                   fontWeight: 700,
                   color: 'primary.main'
                 }}
               >
                 Generate Reports
               </Typography>
-              <Typography 
-                variant="h5" 
-                sx={{ color: 'text.secondary'}}
+              <Typography
+                variant="h5"
+                sx={{ color: 'text.secondary' }}
               >
                 Create detailed reports for your marketing strategy, early adapters analysis, and go-to-market planning.
               </Typography>
             </Box>
           </Box>
-          
+
           <Box display="flex" alignItems="center" justifyContent="center" mb={2}>
             <Typography variant="h6" sx={{ mr: 2 }}>Your Points:</Typography>
             <Chip
@@ -238,10 +225,10 @@ const Reports: React.FC = () => {
                 px: 1
               }}
             />
-            <Button 
-              component={RouterLink} 
-              to="/pricing" 
-              variant="outlined" 
+            <Button
+              component={RouterLink}
+              to="/pricing"
+              variant="outlined"
               sx={{ ml: 2 }}
               size="small"
             >
@@ -260,42 +247,42 @@ const Reports: React.FC = () => {
             aria-label="report types"
             sx={{ borderBottom: 1, borderColor: 'divider' }}
           >
-            <Tab 
+            <Tab
               label={
                 <Box display="flex" alignItems="center">
                   Marketing Strategy
-                  <PointCostChip 
-                    size="small" 
-                    icon={<StarsIcon />} 
-                    label={REPORT_COSTS['marketing-strategy']} 
+                  <PointCostChip
+                    size="small"
+                    icon={<StarsIcon />}
+                    label={REPORT_COSTS['marketing-strategy']}
                   />
                 </Box>
               }
               value="marketing-strategy"
               sx={{ py: 2 }}
             />
-            <Tab 
+            <Tab
               label={
                 <Box display="flex" alignItems="center">
                   Early Adapters
-                  <PointCostChip 
-                    size="small" 
-                    icon={<StarsIcon />} 
-                    label={REPORT_COSTS['early-adapters']} 
+                  <PointCostChip
+                    size="small"
+                    icon={<StarsIcon />}
+                    label={REPORT_COSTS['early-adapters']}
                   />
                 </Box>
               }
               value="early-adapters"
               sx={{ py: 2 }}
             />
-            <Tab 
+            <Tab
               label={
                 <Box display="flex" alignItems="center">
                   Go to Market
-                  <PointCostChip 
-                    size="small" 
-                    icon={<StarsIcon />} 
-                    label={REPORT_COSTS['go-to-market']} 
+                  <PointCostChip
+                    size="small"
+                    icon={<StarsIcon />}
+                    label={REPORT_COSTS['go-to-market']}
                   />
                 </Box>
               }
@@ -306,14 +293,14 @@ const Reports: React.FC = () => {
         </Paper>
 
         {!hasEnoughPoints() && (
-          <Alert 
-            severity="warning" 
+          <Alert
+            severity="warning"
             sx={{ mb: 3 }}
             action={
-              <Button 
-                color="inherit" 
-                size="small" 
-                component={RouterLink} 
+              <Button
+                color="inherit"
+                size="small"
+                component={RouterLink}
                 to="/pricing"
               >
                 Get Points
@@ -343,8 +330,8 @@ const Reports: React.FC = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           variant="filled"
           sx={{ width: '100%' }}

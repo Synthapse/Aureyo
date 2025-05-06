@@ -31,7 +31,7 @@ root.render(
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/reports/history" element={<ReportsHistory />} />
-             path="/reports/:id" element={<ReportDetails />} />
+            <Route path="/reports/:id" element={<ReportDetails />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/pricing/order-confirmation" element={<StripeSuccess />} />

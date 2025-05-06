@@ -133,14 +133,17 @@ const Home: React.FC = () => {
 
   const [logged, setLogged] = React.useState(false);
 
-  // Listen for authentication state changes
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      setLogged(true)
-    } else {
-      setLogged(false)
-    }
-  });
+  useEffect(() => {
+    // Listen for authentication state changes
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setLogged(true)
+      } else {
+        setLogged(false)
+      }
+    });
+  }, []);
+
 
   const signInWithGoogle = async () => {
     try {

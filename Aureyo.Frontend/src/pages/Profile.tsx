@@ -20,6 +20,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { Link as RouterLink } from 'react-router-dom';
 import { auth, googleProvider } from '../firebase';
 import { getUserActivities } from 'services/userActivityService';
+import { getUserPointsFromSubscription } from 'services/subscriptionService';
 
 const PageHeader = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
@@ -69,6 +70,7 @@ const Profile: React.FC = () => {
   const avatar = auth.currentUser?.photoURL;
 
   const [userActivity, setUserActivity] = useState<any[]>([]);
+  const [userPoints, setUserPoints] = useState<number>(0);
 
 
   // Mock user data - replace with actual user data from your auth system
@@ -86,8 +88,19 @@ const Profile: React.FC = () => {
       setUserActivity(userActivity);
     };
     fetchUserActivity();
+    fetchPoints();
   }, []);
 
+
+  const fetchPoints = () => {
+
+    getUserPointsFromSubscription(userEmail ?? "").then((points) => {
+      setUserPoints(points);
+    }).catch((error) => {
+      console.error('Error fetching points:', error);
+      return 0; // Default to 0 points on error
+    });
+  }
 
   return (
     <Box sx={{ bgcolor: 'background.default' }}>
@@ -128,7 +141,7 @@ const Profile: React.FC = () => {
                     color: '#B8860B',
                   }}
                 >
-                  {user.points} Points
+                  {userPoints} Points
                 </Typography>
               </PointsDisplay>
 
