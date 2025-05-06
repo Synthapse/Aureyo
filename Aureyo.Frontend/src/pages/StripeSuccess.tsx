@@ -13,9 +13,20 @@ import { styled } from '@mui/material/styles';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import StarsIcon from '@mui/icons-material/Stars';
 import { useNavigate } from 'react-router-dom';
-import { auth } from '../firebase';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
-import { db } from '../firebase';
+import config from '../config.json';
+import axios from 'axios';
+import { auth } from 'firebase';
+import { saveUserSubscription } from 'services/subscriptionService';
+
+export interface PaymentIntentSucceed {
+  id: string;
+  created: Date;
+  currency: string;
+  customerId: string;
+  customerEmail: string;
+  amount: number;
+}
+
 
 const SuccessContainer = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(6),
@@ -58,55 +69,48 @@ const StripeSuccess: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  
-  useEffect(() => {
-    const processPayment = async () => {
-      try {
-        // Get session ID from URL if provided
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionId = urlParams.get('session_id');
-        
-        // In a real implementation, you would:
-        // 1. Verify the payment with your backend
-        // 2. Get points purchased amount from backend response
-        // 3. Update user's points in database
-        
-        // For this example, simulate a successful backend verification
-        const pointsToAdd = 25; // This would come from your backend
-        setPointsAdded(pointsToAdd);
-        
-        // Update user points in Firestore
-        const user = auth.currentUser;
-        if (user) {
-          const userRef = doc(db, "users", user.uid);
-          const userDoc = await getDoc(userRef);
-          
-          if (userDoc.exists()) {
-            await updateDoc(userRef, {
-              points: increment(pointsToAdd)
-            });
-          } else {
-            await updateDoc(userRef, {
-              points: pointsToAdd
-            });
-          }
+
+  const getUserEmailFromUrl = () => {
+    const hashIndex = window.location.href.indexOf('#');
+    if (hashIndex !== -1) {
+        const queryString = window.location.href.substr(hashIndex + 1).split('?')[1];
+        if (queryString) {
+            const urlSearchParams = new URLSearchParams(queryString);
+            return urlSearchParams.get('userEmail');
         }
-        
-        setProcessingPayment(false);
-      } catch (err) {
-        console.error("Error processing payment:", err);
-        setError("There was an error processing your payment. Please contact support.");
-        setProcessingPayment(false);
-      }
-    };
+    }
+    return null;
+};
 
-    const timer = setTimeout(() => {
-      processPayment();
-    }, 2000);
 
-    return () => clearTimeout(timer);
-  }, []);
+const userId = auth.currentUser?.uid;
 
+const saveSubscription = (data: PaymentIntentSucceed) => {
+    saveUserSubscription(userId, data);
+}
+
+
+const processSubscription = () => {
+    const userEmail = getUserEmailFromUrl();
+    const url = `${config.apps.PaymentAPI.url}/Payment/finalizePayment?userEmail=${userEmail}`;
+
+    axios.get(url)
+        .then(response => {
+            saveSubscription(response.data)
+        })
+        .catch(error => {
+            // Handle error
+            console.error('Error:', error);
+        });
+};
+
+
+useEffect(() => {
+    processSubscription();
+}, [])
+
+
+  
   const handleContinue = () => {
     navigate('/reports');
   };
