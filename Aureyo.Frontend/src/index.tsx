@@ -11,6 +11,8 @@ import ReportsHistory from 'pages/ReportsHistory';
 import ReportDetails from 'pages/ReportDetails';
 import Pricing from 'pages/Pricing';
 import Profile from 'pages/Profile';
+import StripeSuccess from 'pages/StripeSuccess';
+import StripeCancel from 'pages/StripeCancel';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import theme from 'styles/theme';
 
@@ -32,6 +34,8 @@ root.render(
             <Route path="/reports/:id" element={<ReportDetails />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/order-confirmation" element={<StripeSuccess />} />
+            <Route path="/profile/order-cancel" element={<StripeCancel />} />
           </Routes>
         </MainLayout>
       </HashRouter>

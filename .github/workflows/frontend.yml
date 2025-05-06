@@ -39,7 +39,7 @@ jobs:
           apps.RaportingAPI.url: ${{ env.RAPORTING_API_URL }}
 
       - name: Read config.json from VoiceSense.Front
-        run: 'cat AuthenticScope.Frontend/src/config.json'
+        run: 'cat Aureyo.Frontend/src/config.json'
 
       - name: Build and deploy frontend to static GCP Cloud Storage
         run: |
