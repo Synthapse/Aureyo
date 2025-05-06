@@ -34,8 +34,8 @@ root.render(
             <Route path="/reports/:id" element={<ReportDetails />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/order-confirmation" element={<StripeSuccess />} />
-            <Route path="/profile/order-cancel" element={<StripeCancel />} />
+            <Route path="/pricing/order-confirmation" element={<StripeSuccess />} />
+            <Route path="/pricing/order-cancel" element={<StripeCancel />} />
           </Routes>
         </MainLayout>
       </HashRouter>
