@@ -15,7 +15,7 @@ import StarsIcon from '@mui/icons-material/Stars';
 import { useNavigate } from 'react-router-dom';
 import config from '../config.json';
 import axios from 'axios';
-import { auth } from 'firebase';
+import { auth } from '../firebase';
 import { saveUserSubscription } from 'services/subscriptionService';
 
 export interface PaymentIntentSucceed {
@@ -73,44 +73,46 @@ const StripeSuccess: React.FC = () => {
   const getUserEmailFromUrl = () => {
     const hashIndex = window.location.href.indexOf('#');
     if (hashIndex !== -1) {
-        const queryString = window.location.href.substr(hashIndex + 1).split('?')[1];
-        if (queryString) {
-            const urlSearchParams = new URLSearchParams(queryString);
-            return urlSearchParams.get('userEmail');
-        }
+      const queryString = window.location.href.substr(hashIndex + 1).split('?')[1];
+      if (queryString) {
+        const urlSearchParams = new URLSearchParams(queryString);
+        return urlSearchParams.get('userEmail');
+      }
     }
     return null;
-};
+  };
 
 
-const userId = auth.currentUser?.uid;
+  const userId = auth.currentUser?.uid;
 
-const saveSubscription = (data: PaymentIntentSucceed) => {
-    saveUserSubscription(userId, data);
-}
+  const saveSubscription = (data: PaymentIntentSucceed) => {
+    if (userId) {
+      saveUserSubscription(userId, data);
+    }
+  }
 
 
-const processSubscription = () => {
+  const processSubscription = () => {
     const userEmail = getUserEmailFromUrl();
     const url = `${config.apps.PaymentAPI.url}/Payment/finalizePayment?userEmail=${userEmail}`;
 
     axios.get(url)
-        .then(response => {
-            saveSubscription(response.data)
-        })
-        .catch(error => {
-            // Handle error
-            console.error('Error:', error);
-        });
-};
+      .then(response => {
+        saveSubscription(response.data)
+      })
+      .catch(error => {
+        // Handle error
+        console.error('Error:', error);
+      });
+  };
 
 
-useEffect(() => {
+  useEffect(() => {
     processSubscription();
-}, [])
+  }, [])
 
 
-  
+
   const handleContinue = () => {
     navigate('/reports');
   };
@@ -136,9 +138,9 @@ useEffect(() => {
             <Typography paragraph>
               {error}
             </Typography>
-            <Button 
-              variant="contained" 
-              color="primary" 
+            <Button
+              variant="contained"
+              color="primary"
               onClick={() => navigate('/pricing')}
             >
               Return to Pricing
@@ -150,43 +152,43 @@ useEffect(() => {
             <Typography variant="h4" gutterBottom>
               Payment Successful!
             </Typography>
-            <Typography 
-              variant="body1" 
-              color="text.secondary" 
+            <Typography
+              variant="body1"
+              color="text.secondary"
               align="center"
               paragraph
             >
               Thank you for your purchase. Your points have been added to your account.
             </Typography>
-            
+
             <Divider sx={{ width: '100%', my: 3 }} />
-            
+
             <Typography variant="h6" gutterBottom>
               Points Added to Your Account
             </Typography>
-            
+
             <PointsDisplay>
               <PointsIcon />
-              <Typography 
-                variant="h4" 
+              <Typography
+                variant="h4"
                 component="span"
                 sx={{ fontWeight: 700 }}
               >
                 {pointsAdded} Points
               </Typography>
             </PointsDisplay>
-            
+
             <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-              <Button 
-                variant="outlined" 
-                color="primary" 
+              <Button
+                variant="outlined"
+                color="primary"
                 onClick={() => navigate('/profile')}
               >
                 Go to Profile
               </Button>
-              <Button 
-                variant="contained" 
-                color="primary" 
+              <Button
+                variant="contained"
+                color="primary"
                 onClick={handleContinue}
               >
                 Start Creating Reports
