@@ -83,13 +83,12 @@ const StripeSuccess: React.FC = () => {
   };
 
 
-  const userId = auth.currentUser?.uid;
 
-  const saveSubscription = (data: PaymentIntentSucceed) => {
-    if (userId) {
-      saveUserSubscription(userId, data);
+  const saveSubscription = (userEmail: string, data: PaymentIntentSucceed) => {
+
+      console.log(`Save data for ${userEmail}, with ${data}`)
+      saveUserSubscription(userEmail, data);
       setProcessingPayment(false);
-    }
   }
 
 
@@ -99,7 +98,7 @@ const StripeSuccess: React.FC = () => {
 
     axios.get(url)
       .then(response => {
-        saveSubscription(response.data)
+        saveSubscription(userEmail ?? "", response.data)
       })
       .catch(error => {
         // Handle error
