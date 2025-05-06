@@ -25,6 +25,7 @@ export interface PaymentIntentSucceed {
   customerId: string;
   customerEmail: string;
   amount: number;
+  products: any;
 }
 
 
