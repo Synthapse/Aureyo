@@ -65,7 +65,7 @@ const PointsIcon = styled(StarsIcon)(({ theme }) => ({
 
 const StripeSuccess: React.FC = () => {
   const [processingPayment, setProcessingPayment] = useState(true);
-  const [pointsAdded, setPointsAdded] = useState(0);
+  const [pointsAdded, setPointsAdded] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -96,6 +96,8 @@ const StripeSuccess: React.FC = () => {
         description: data.products[0].description,
         quantity: data.products[0].quantity, 
       }
+
+      setPointsAdded(subscriptionData.quantity);
 
       console.log(`Save data for ${userEmail}, with ${subscriptionData}`)
       saveUserSubscription(userEmail, subscriptionData);
