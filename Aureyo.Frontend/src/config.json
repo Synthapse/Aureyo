@@ -5,7 +5,7 @@
             "measurementId": ""
         },
         "PaymentAPI": {
-            "url": "http://localhost:5099",
+            "url": "http://localhost:8080",
             "isProduction": true
         },
         "RaportingAPI": {

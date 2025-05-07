@@ -5,6 +5,7 @@ export interface UserActivity {
   id?: string;
   userId: string;
   type: 'marketing-strategy' | 'go-to-market' | 'early-adapters';
+  reportId: string;
   title: string;
   createdAt: Date;
   status: 'completed' | 'pending' | 'failed';
@@ -49,6 +50,7 @@ export const getUserActivities = async (userId: string | any): Promise<UserActiv
         userId: data.userId,
         type: data.type,
         title: data.title,
+        reportId: data.reportId,
         createdAt: (data.createdAt as Timestamp).toDate(),
         status: data.status,
       };

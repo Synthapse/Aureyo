@@ -133,12 +133,13 @@ const Reports: React.FC = () => {
       }
 
       // Save report to Firebase
-      await addDoc(collection(db, "reports"), {
+      const docRef = await addDoc(collection(db, "reports"), {
         tab: activeTab,
         inputData: data,
         reportText: response.text_content || "",
         createdAt: Timestamp.now(),
-        status: 'completed'
+        status: 'completed',
+        public: false,
       });
 
 
@@ -148,6 +149,7 @@ const Reports: React.FC = () => {
         await addUserActivity({
           userId: user.uid,
           type: activeTab,
+          reportId: docRef.id,
           title: getReportTitle(activeTab, data),
           status: 'completed'
         });
