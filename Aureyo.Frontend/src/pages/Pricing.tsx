@@ -102,12 +102,12 @@ const Pricing: React.FC = () => {
 
     // Apply discount for larger packages
     if (points >= 50) {
-      pricePerPoint = 0.8; // 20% discount for 50+ points
+      pricePerPoint = 0.18; // 20% discount for 50+ points
     } else if (points >= 25) {
-      pricePerPoint = 0.9; // 10% discount for 25+ points
+      pricePerPoint = 0.20; // 10% discount for 25+ points
     }
 
-    return (points * pricePerPoint).toFixed(2);
+    return (points * pricePerPoint)
   };
 
 
@@ -120,6 +120,8 @@ const Pricing: React.FC = () => {
       Points: selectedPoints,
       Price: Number(calculatePrice(selectedPoints))
     }
+
+    console.log(data)
 
     axios.post(`${config.apps.PaymentAPI.url}/Payment/buyAureyoPoints`, data)
       .then(response => {
