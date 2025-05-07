@@ -23,7 +23,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import HistoryIcon from '@mui/icons-material/History';
 import StarsIcon from '@mui/icons-material/Stars';
 import { addUserActivity } from '../services/userActivityService';
-import { getUserPointsFromSubscription, removePointsFromSubscription } from 'services/subscriptionService';
+import { getUserPoints, removeUserPoints } from 'services/subscriptionService';
 
 const PageHeader = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
@@ -73,7 +73,7 @@ const Reports: React.FC = () => {
 
   const fetchPoints = () => {
 
-    getUserPointsFromSubscription(userEmail ?? "").then((points) => {
+    getUserPoints(userEmail ?? "").then((points) => {
       setUserPoints(points);
       setIsLoading(false); // Set loading to false after fetching points
     }).catch((error) => {
@@ -154,7 +154,7 @@ const Reports: React.FC = () => {
 
         // Deduct points from user's account
 
-        removePointsFromSubscription(userEmail ?? "", REPORT_COSTS[activeTab]).then(() => {
+        removeUserPoints(userEmail ?? "", REPORT_COSTS[activeTab]).then(() => {
           console.log('Points deducted successfully.');
         }).catch((error) => {
           console.error('Error deducting points:', error);

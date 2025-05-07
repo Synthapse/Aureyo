@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import config from '../config.json';
 import axios from 'axios';
 import { auth } from '../firebase';
-import { saveUserSubscription } from 'services/subscriptionService';
+import { savePointsFromSubscription, saveUserSubscription } from 'services/subscriptionService';
 
 export interface PaymentIntentSucceed {
   id: string;
@@ -86,6 +86,8 @@ const StripeSuccess: React.FC = () => {
 
   const saveSubscription = (userEmail: string, data: PaymentIntentSucceed) => {
 
+      const points = data.products[0].quantity;
+
       const subscriptionData = {
         id: data.id,
         created: data.created,
@@ -94,13 +96,14 @@ const StripeSuccess: React.FC = () => {
         customerEmail: data.customerEmail,
         customerId: data.customerId,
         description: data.products[0].description,
-        quantity: data.products[0].quantity, 
+        quantity: points, 
       }
 
-      setPointsAdded(subscriptionData.quantity);
-
+      setPointsAdded(points);
       console.log(`Save data for ${userEmail}, with ${subscriptionData}`)
       saveUserSubscription(userEmail, subscriptionData);
+      savePointsFromSubscription(userEmail, points);
+    
       setProcessingPayment(false);
   }
 

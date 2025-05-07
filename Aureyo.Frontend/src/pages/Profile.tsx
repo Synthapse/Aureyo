@@ -20,7 +20,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { Link as RouterLink } from 'react-router-dom';
 import { auth, googleProvider } from '../firebase';
 import { getUserActivities } from 'services/userActivityService';
-import { getUserPointsFromSubscription } from 'services/subscriptionService';
+import { getUserPoints } from 'services/subscriptionService';
 
 const PageHeader = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
@@ -94,7 +94,7 @@ const Profile: React.FC = () => {
 
   const fetchPoints = () => {
 
-    getUserPointsFromSubscription(userEmail ?? "").then((points) => {
+    getUserPoints(userEmail ?? "").then((points) => {
       setUserPoints(points);
     }).catch((error) => {
       console.error('Error fetching points:', error);

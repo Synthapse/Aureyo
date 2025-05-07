@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, TextField, Typography, Paper, Stack } from '@mui/material';
+import { Box, Button, TextField, Typography, Paper, Stack, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { MarketingStrategyReport, EarlyAdaptersDesignReport, GoToMarketReport, ReportType } from '../types/reports';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 
@@ -33,6 +33,21 @@ const sampleData = {
   }
 };
 
+const budgetOptions = [
+  { value: 'free', label: 'No budget, just time' },
+  { value: 'small', label: 'Small ($1,000 - $5,000 monthly)' },
+  { value: 'medium', label: 'Medium ($5,000 - $20,000 monthly)' },
+  { value: 'large', label: 'Large ($20,000+ monthly)' },
+  { value: 'custom', label: 'Custom Budget' }
+];
+
+const timelineOptions = [
+  { value: 'short', label: 'Short Term (1-3 months)' },
+  { value: 'medium', label: 'Medium Term (3-6 months)' },
+  { value: 'long', label: 'Long Term (6-12 months)' },
+  { value: 'custom', label: 'Custom Timeline' }
+];
+
 const getInitialFormData = (type: ReportType) => {
   const baseData = { title: '' };
   
@@ -41,9 +56,9 @@ const getInitialFormData = (type: ReportType) => {
       return {
         ...baseData,
         objectives: '',
-        strategic_prompt: '',
+        strategic_prompt: 'Develop a comprehensive digital marketing strategy focusing on content marketing, social media engagement, and targeted advertising campaigns.',
         target_market: '',
-        budget_constraints: '',
+        budget_constraints: 'medium',
       };
     case 'early-adapters':
       return {
@@ -51,15 +66,15 @@ const getInitialFormData = (type: ReportType) => {
         product_description: '',
         target_audience: '',
         strategic_goals: '',
-        resource_constraints: '',
+        resource_constraints: 'medium',
       };
     case 'go-to-market':
       return {
         ...baseData,
         product_description: '',
         target_market: '',
-        budget_range: '',
-        timeline_constraints: '',
+        budget_range: 'medium',
+        timeline_constraints: 'medium',
       };
   }
 };
@@ -70,7 +85,7 @@ const getFormFields = (type: ReportType) => {
       return [
         { name: 'title', label: 'Title' },
         { name: 'objectives', label: 'Objectives' },
-        { name: 'strategic_prompt', label: 'Strategic Prompt' },
+        // { name: 'strategic_prompt', label: 'Strategic Prompt' },
         { name: 'target_market', label: 'Target Market' },
         { name: 'budget_constraints', label: 'Budget Constraints' },
       ];
@@ -80,7 +95,7 @@ const getFormFields = (type: ReportType) => {
         { name: 'product_description', label: 'Product Description' },
         { name: 'target_audience', label: 'Target Audience' },
         { name: 'strategic_goals', label: 'Strategic Goals' },
-        { name: 'resource_constraints', label: 'Resource Constraints' },
+        // { name: 'resource_constraints', label: 'Resource Constraints' },
       ];
     case 'go-to-market':
       return [
@@ -95,6 +110,8 @@ const getFormFields = (type: ReportType) => {
 
 const ReportForm: React.FC<ReportFormProps> = ({ type, onSubmit, disabled = false }) => {
   const [formData, setFormData] = useState(getInitialFormData(type));
+  const [showCustomBudget, setShowCustomBudget] = useState(false);
+  const [showCustomTimeline, setShowCustomTimeline] = useState(false);
   
   // Update form data when type changes
   React.useEffect(() => {
@@ -106,6 +123,21 @@ const ReportForm: React.FC<ReportFormProps> = ({ type, onSubmit, disabled = fals
       ...prev,
       [field]: event.target.value,
     }));
+  };
+
+  const handleSelectChange = (field: string) => (event: any) => {
+    const value = event.target.value;
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+
+    if (field === 'budget_constraints' || field === 'budget_range') {
+      setShowCustomBudget(value === 'custom');
+    }
+    if (field === 'timeline_constraints') {
+      setShowCustomTimeline(value === 'custom');
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -157,19 +189,91 @@ const ReportForm: React.FC<ReportFormProps> = ({ type, onSubmit, disabled = fals
         </Box>
       </Box>
       <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {fields.map(field => (
-          <TextField
-            key={field.name}
-            label={field.label}
-            value={formData[field.name as keyof typeof formData]}
-            onChange={handleChange(field.name)}
-            fullWidth
-            required
-            multiline={field.name !== 'title'}
-            rows={field.name !== 'title' ? 3 : 1}
-            disabled={disabled}
-          />
-        ))}
+        {fields.map(field => {
+          if (field.name === 'budget_constraints' || field.name === 'budget_range') {
+            return (
+              <Box key={field.name}>
+                <FormControl fullWidth required>
+                  <InputLabel>{field.label}</InputLabel>
+                  <Select
+                    value={formData[field.name as keyof typeof formData]}
+                    onChange={handleSelectChange(field.name)}
+                    label={field.label}
+                    disabled={disabled}
+                  >
+                    {budgetOptions.map(option => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {showCustomBudget && (
+                  <TextField
+                    label="Custom Budget Details"
+                    value={formData[field.name as keyof typeof formData]}
+                    onChange={handleChange(field.name)}
+                    fullWidth
+                    required
+                    multiline
+                    rows={3}
+                    disabled={disabled}
+                    sx={{ mt: 2 }}
+                  />
+                )}
+              </Box>
+            );
+          }
+          
+          if (field.name === 'timeline_constraints') {
+            return (
+              <Box key={field.name}>
+                <FormControl fullWidth required>
+                  <InputLabel>{field.label}</InputLabel>
+                  <Select
+                    value={formData[field.name as keyof typeof formData]}
+                    onChange={handleSelectChange(field.name)}
+                    label={field.label}
+                    disabled={disabled}
+                  >
+                    {timelineOptions.map(option => (
+                      <MenuItem key={option.value} value={option.value}>
+                        {option.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                {showCustomTimeline && (
+                  <TextField
+                    label="Custom Timeline Details"
+                    value={formData[field.name as keyof typeof formData]}
+                    onChange={handleChange(field.name)}
+                    fullWidth
+                    required
+                    multiline
+                    rows={3}
+                    disabled={disabled}
+                    sx={{ mt: 2 }}
+                  />
+                )}
+              </Box>
+            );
+          }
+
+          return (
+            <TextField
+              key={field.name}
+              label={field.label}
+              value={formData[field.name as keyof typeof formData]}
+              onChange={handleChange(field.name)}
+              fullWidth
+              required
+              multiline={field.name !== 'title'}
+              rows={field.name !== 'title' ? 3 : 1}
+              disabled={disabled}
+            />
+          );
+        })}
         <Button
           type="submit"
           variant="contained"
