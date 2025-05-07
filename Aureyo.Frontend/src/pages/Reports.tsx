@@ -3,14 +3,16 @@ import {
   Container,
   Typography,
   Box,
-  Tabs,
-  Tab,
   Alert,
   Snackbar,
   CircularProgress,
   Paper,
   Button,
   Chip,
+  Grid,
+  Card,
+  CardContent,
+  CardActionArea,
   Tooltip
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
@@ -27,9 +29,8 @@ import { getUserPoints, removeUserPoints } from 'services/subscriptionService';
 
 const PageHeader = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
-  padding: theme.spacing(10, 0, 8),
-  marginBottom: theme.spacing(4),
-  textAlign: 'center',
+  padding: theme.spacing(2, 0),
+  marginBottom: theme.spacing(3),
   borderBottom: `1px solid ${theme.palette.divider}`,
 }));
 
@@ -47,13 +48,61 @@ const PointCostChip = styled(Chip)(({ theme }) => ({
 const REPORT_COSTS = {
   'marketing-strategy': 3,
   'early-adapters': 2,
-  'go-to-market': 2
+  'go-to-market': 2,
+  'reddit-audience': 3,
 };
+
+const ReportTypeCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[4],
+  },
+}));
+
+const ReportTypeContent = styled(CardContent)(({ theme }) => ({
+  flexGrow: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  textAlign: 'center',
+  padding: theme.spacing(3),
+}));
+
+const reportTypes = [
+  {
+    type: 'marketing-strategy' as ReportType,
+    title: 'Marketing Strategy',
+    description: 'Create a comprehensive digital marketing strategy focusing on content, social media, and targeted campaigns.',
+    icon: '📈',
+  },
+  {
+    type: 'early-adapters' as ReportType,
+    title: 'Early Adapters',
+    description: 'Design and implement an early adopters program to gather feedback and build initial user base.',
+    icon: '🚀',
+  },
+  {
+    type: 'go-to-market' as ReportType,
+    title: 'Go to Market',
+    description: 'Develop a detailed go-to-market strategy for your product launch and market entry.',
+    icon: '🎯',
+  },
+  {
+    type: 'reddit-audience' as ReportType,
+    title: 'Reddit Audience',
+    description: 'Analyze Reddit communities to understand your target audience and market opportunities.',
+    icon: '🔍',
+  },
+];
 
 const Reports: React.FC = () => {
 
   const userEmail = auth.currentUser?.email;
-  const [activeTab, setActiveTab] = useState<ReportType>('marketing-strategy');
+  const [activeTab, setActiveTab] = useState<ReportType | null>(null);
   const [loading, setLoading] = useState(false);
   const [userPoints, setUserPoints] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,10 +131,6 @@ const Reports: React.FC = () => {
     });
   }
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: ReportType) => {
-    setActiveTab(newValue);
-  };
-
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
   };
@@ -98,16 +143,21 @@ const Reports: React.FC = () => {
         return `Go-to-Market Plan for ${data.productName || 'Product'}`;
       case 'early-adapters':
         return `Early Adopters Analysis for ${data.targetMarket || 'Target Market'}`;
+      case 'reddit-audience':
+        return `Reddit Audience Analysis for ${data.community || 'Community'}`;
       default:
         return 'Report';
     }
   };
 
   const hasEnoughPoints = () => {
+    if (!activeTab) return false;
     return userPoints >= REPORT_COSTS[activeTab];
   };
 
   const handleSubmit = async (data: any) => {
+    if (!activeTab) return;
+    
     if (!hasEnoughPoints()) {
       setSnackbar({
         open: true,
@@ -130,6 +180,9 @@ const Reports: React.FC = () => {
         case 'go-to-market':
           response = await reportService.generateGoToMarketReport(data);
           break;
+        case 'reddit-audience':
+          response = await reportService.generateRedditAudienceReport(data);
+          break;
       }
 
       // Save report to Firebase
@@ -141,7 +194,6 @@ const Reports: React.FC = () => {
         status: 'completed',
         public: false,
       });
-
 
       // Add user activity
       const user = auth.currentUser;
@@ -155,13 +207,11 @@ const Reports: React.FC = () => {
         });
 
         // Deduct points from user's account
-
         removeUserPoints(userEmail ?? "", REPORT_COSTS[activeTab]).then(() => {
           console.log('Points deducted successfully.');
         }).catch((error) => {
           console.error('Error deducting points:', error);
         });
-
 
         // Update local state with new points balance
         setUserPoints(prevPoints => prevPoints - REPORT_COSTS[activeTab]);
@@ -188,141 +238,126 @@ const Reports: React.FC = () => {
   return (
     <Box sx={{ bgcolor: 'background.default' }}>
       <PageHeader>
-        <Container maxWidth="md">
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
+        <Container maxWidth="lg">
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            gap: 2
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Typography
-                variant="h2"
-                component="h1"
-                gutterBottom
-                sx={{
-                  fontWeight: 700,
-                  color: 'primary.main'
-                }}
-              >
-                Generate Reports
-              </Typography>
-              <Typography
-                variant="h5"
+                variant="body2"
                 sx={{ color: 'text.secondary' }}
               >
                 Create detailed reports for your marketing strategy, early adapters analysis, and go-to-market planning.
               </Typography>
             </Box>
-          </Box>
 
-          <Box display="flex" alignItems="center" justifyContent="center" mb={2}>
-            <Typography variant="h6" sx={{ mr: 2 }}>Your Points:</Typography>
-            <Chip
-              icon={<StarsIcon />}
-              label={isLoading ? "Loading..." : userPoints}
-              sx={{
-                backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                color: '#B8860B',
-                fontWeight: 600,
-                '& .MuiChip-icon': {
-                  color: '#FFD700',
-                },
-                fontSize: '1.2rem',
-                px: 1
-              }}
-            />
-            <Button
-              component={RouterLink}
-              to="/pricing"
-              variant="outlined"
-              sx={{ ml: 2 }}
-              size="small"
-            >
-              Get More Points
-            </Button>
+            <Box display="flex" alignItems="center" gap={2}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>Points:</Typography>
+              <Chip
+                icon={<StarsIcon />}
+                label={isLoading ? "Loading..." : userPoints}
+                size="small"
+                sx={{
+                  backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                  color: '#B8860B',
+                  fontWeight: 600,
+                  '& .MuiChip-icon': {
+                    color: '#FFD700',
+                  },
+                }}
+              />
+              <Button
+                component={RouterLink}
+                to="/pricing"
+                variant="outlined"
+                size="small"
+              >
+                Get More Points
+              </Button>
+            </Box>
           </Box>
         </Container>
       </PageHeader>
 
       <Container maxWidth="lg">
-        <Paper sx={{ mb: 4 }}>
-          <Tabs
-            value={activeTab}
-            onChange={handleTabChange}
-            variant="fullWidth"
-            aria-label="report types"
-            sx={{ borderBottom: 1, borderColor: 'divider' }}
-          >
-            <Tab
-              label={
-                <Box display="flex" alignItems="center">
-                  Marketing Strategy
-                  <PointCostChip
-                    size="small"
-                    icon={<StarsIcon />}
-                    label={REPORT_COSTS['marketing-strategy']}
-                  />
-                </Box>
-              }
-              value="marketing-strategy"
-              sx={{ py: 2 }}
-            />
-            <Tab
-              label={
-                <Box display="flex" alignItems="center">
-                  Early Adapters
-                  <PointCostChip
-                    size="small"
-                    icon={<StarsIcon />}
-                    label={REPORT_COSTS['early-adapters']}
-                  />
-                </Box>
-              }
-              value="early-adapters"
-              sx={{ py: 2 }}
-            />
-            <Tab
-              label={
-                <Box display="flex" alignItems="center">
-                  Go to Market
-                  <PointCostChip
-                    size="small"
-                    icon={<StarsIcon />}
-                    label={REPORT_COSTS['go-to-market']}
-                  />
-                </Box>
-              }
-              value="go-to-market"
-              sx={{ py: 2 }}
-            />
-          </Tabs>
-        </Paper>
-
-        {!hasEnoughPoints() && (
-          <Alert
-            severity="warning"
-            sx={{ mb: 3 }}
-            action={
-              <Button
-                color="inherit"
-                size="small"
-                component={RouterLink}
-                to="/pricing"
-              >
-                Get Points
-              </Button>
-            }
-          >
-            You need {REPORT_COSTS[activeTab]} points to generate this report. Your current balance: {userPoints} points.
-          </Alert>
-        )}
-
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress />
-          </Box>
+        {!activeTab ? (
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            {reportTypes.map((reportType) => (
+              <Grid item xs={12} sm={6} md={3} key={reportType.type}>
+                <ReportTypeCard>
+                  <CardActionArea onClick={() => setActiveTab(reportType.type)}>
+                    <ReportTypeContent>
+                      <Typography variant="h1" sx={{ fontSize: '3rem', mb: 2 }}>
+                        {reportType.icon}
+                      </Typography>
+                      <Typography variant="h6" gutterBottom>
+                        {reportType.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        {reportType.description}
+                      </Typography>
+                      <PointCostChip
+                        size="small"
+                        icon={<StarsIcon />}
+                        label={REPORT_COSTS[reportType.type]}
+                      />
+                    </ReportTypeContent>
+                  </CardActionArea>
+                </ReportTypeCard>
+              </Grid>
+            ))}
+          </Grid>
         ) : (
-          <ReportForm
-            type={activeTab}
-            onSubmit={handleSubmit}
-            disabled={!hasEnoughPoints()}
-          />
+          <>
+            <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Button
+                onClick={() => setActiveTab(null)}
+                startIcon={<HistoryIcon />}
+                sx={{ mb: 2 }}
+              >
+                Back to Report Types
+              </Button>
+              <PointCostChip
+                size="medium"
+                icon={<StarsIcon />}
+                label={`${REPORT_COSTS[activeTab]} points required`}
+              />
+            </Box>
+
+            {!hasEnoughPoints() && (
+              <Alert
+                severity="warning"
+                sx={{ mb: 3 }}
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    component={RouterLink}
+                    to="/pricing"
+                  >
+                    Get Points
+                  </Button>
+                }
+              >
+                You need {REPORT_COSTS[activeTab]} points to generate this report. Your current balance: {userPoints} points.
+              </Alert>
+            )}
+
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <ReportForm
+                type={activeTab}
+                onSubmit={handleSubmit}
+                disabled={!hasEnoughPoints()}
+              />
+            )}
+          </>
         )}
       </Container>
 

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Paper, Stack, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import { MarketingStrategyReport, EarlyAdaptersDesignReport, GoToMarketReport, ReportType } from '../types/reports';
+import { MarketingStrategyReport, EarlyAdaptersDesignReport, GoToMarketReport, RedditAudienceReport, ReportType } from '../types/reports';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 
 type ReportFormProps = {
   type: ReportType;
-  onSubmit: (data: MarketingStrategyReport | EarlyAdaptersDesignReport | GoToMarketReport) => void;
+  onSubmit: (data: MarketingStrategyReport | EarlyAdaptersDesignReport | GoToMarketReport | RedditAudienceReport) => void;
   disabled?: boolean;
 };
 
@@ -30,6 +30,10 @@ const sampleData = {
     target_market: 'Medium to large-sized businesses in finance, retail, and healthcare sectors with annual revenue exceeding $10M.',
     budget_range: '$500,000 initial launch budget with $100,000 monthly operational budget for the first year.',
     timeline_constraints: '6 months for beta testing, 3 months for market validation, and full market launch within 12 months.',
+  },
+  'reddit-audience': {
+    title: 'r/startups Community Analysis',
+    community: 'r/startups',
   }
 };
 
@@ -76,6 +80,11 @@ const getInitialFormData = (type: ReportType) => {
         budget_range: 'medium',
         timeline_constraints: 'medium',
       };
+    case 'reddit-audience':
+      return {
+        ...baseData,
+        community: '',
+      };
   }
 };
 
@@ -104,6 +113,11 @@ const getFormFields = (type: ReportType) => {
         { name: 'target_market', label: 'Target Market' },
         { name: 'budget_range', label: 'Budget Range' },
         { name: 'timeline_constraints', label: 'Timeline Constraints' },
+      ];
+    case 'reddit-audience':
+      return [
+        { name: 'title', label: 'Title' },
+        { name: 'community', label: 'Reddit Community' },
       ];
   }
 };

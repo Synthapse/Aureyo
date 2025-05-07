@@ -16,17 +16,20 @@ export const getReports = async (): Promise<Report[]> => {
   const q = query(reportsRef, orderBy('createdAt', 'desc'));
   const querySnapshot = await getDocs(q);
   
-  return querySnapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      type: data.tab,
-      inputData: data.inputData,
-      data: data.reportText,
-      createdAt: (data.createdAt as Timestamp).toDate(),
-      status: data.status,
-    };
-  });
+  return querySnapshot.docs
+    .map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        type: data.tab,
+        inputData: data.inputData,
+        data: data.reportText,
+        createdAt: (data.createdAt as Timestamp).toDate(),
+        status: data.status,
+        public: data.public, // Assuming the field is called `public`
+      };
+    })
+    .filter(report => report.public); // Only return reports where public is true
 };
 
 export const getReportById = async (id: string): Promise<Report | null> => {

@@ -107,13 +107,13 @@ const ReportsHistory: React.FC = () => {
               color: 'primary.main',
             }}
           >
-            Reports History
+            Reports
           </Typography>
           <Typography
             variant="h5"
             sx={{ color: 'text.secondary', maxWidth: 600, mx: 'auto' }}
           >
-            View and manage your generated reports
+            View and manage your public reports
           </Typography>
         </Container>
       </PageHeader>

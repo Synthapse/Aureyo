@@ -4,7 +4,7 @@ import { db, auth } from '../firebase';
 export interface UserActivity {
   id?: string;
   userId: string;
-  type: 'marketing-strategy' | 'go-to-market' | 'early-adapters';
+  type: 'marketing-strategy' | 'go-to-market' | 'early-adapters' | 'reddit-audience';
   reportId: string;
   title: string;
   createdAt: Date;

@@ -9,6 +9,7 @@ on:
 env:
   PAYMENT_API_URL: 'https://payment-3jq2rv5sxa-lm.a.run.app'
   RAPORTING_API_URL: 'https://raporting-319936913236.europe-central2.run.app'
+  MAS_API: "https://mas-backend-946555989276.europe-central2.run.app"
   BUCKET: 'aureyo'
   ENVIRONMENT: true
 
@@ -37,6 +38,7 @@ jobs:
         env:
           apps.PaymentAPI.url: ${{ env.PAYMENT_API_URL }}
           apps.RaportingAPI.url: ${{ env.RAPORTING_API_URL }}
+          apps.MASAPI.url: ${{ env.RAPORTING_API_URL }}
 
       - name: Read config.json from VoiceSense.Front
         run: 'cat Aureyo.Frontend/src/config.json'

@@ -22,4 +22,9 @@ export interface GoToMarketReport {
   timeline_constraints: string;
 }
 
-export type ReportType = 'marketing-strategy' | 'early-adapters' | 'go-to-market'; 
+export interface RedditAudienceReport {
+  title: string;
+  community: string;
+}
+
+export type ReportType = 'marketing-strategy' | 'early-adapters' | 'go-to-market' | 'reddit-audience'; 
