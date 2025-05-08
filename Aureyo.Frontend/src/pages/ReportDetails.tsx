@@ -129,32 +129,31 @@ const ReportDetails: React.FC = () => {
 
 
   const getFileName = () => {
-    const getFileName = () => {
-      const type = report.type;
-      const date = new Date(report.createdAt);
-    
-      // Include title and format date to YYYYMMDD
-      const title = report.inputData.title;
-      
-      let typeFileName = "";
-    
-      if (type === "marketing-strategy") {
-        typeFileName = "marketing_strategy";
-      } else if (type === "early-adapters") {
-        typeFileName = "early_adopter_strategy";
-      } else if (type === "go-to-market") {
-        typeFileName = "gtm_strategy";
-      }
-    
-      // Format date: YYYYMMDD (only date part)
-      const iso = date.toISOString(); // e.g. "2025-05-08T15:43:12.345Z"
-      const datePart = iso.slice(0, 10).replace(/-/g, ''); // YYYYMMDD
-    
-      // Construct the filename
-      const filename = `${typeFileName}_${title}_${datePart}.pdf`;
-      return filename;
-    };
-    
+    const type = report.type;
+    const date = new Date(report.createdAt);
+
+    // Include title and format date to YYYYMMDD
+    const title = report.inputData.title;
+
+    let typeFileName = "";
+
+    if (type === "marketing-strategy") {
+      typeFileName = "marketing_strategy";
+    } else if (type === "early-adapters") {
+      typeFileName = "early_adopter_strategy";
+    } else if (type === "go-to-market") {
+      typeFileName = "gtm_strategy";
+    }
+
+    // Format date: YYYYMMDD (only date part)
+    const iso = date.toISOString(); // e.g. "2025-05-08T15:43:12.345Z"
+    const datePart = iso.slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+
+    // Construct the filename
+    const filename = `${typeFileName}_${title}_${datePart}.pdf`;
+    return filename;
+  };
+
 
   console.log(report);
 
@@ -185,7 +184,7 @@ const ReportDetails: React.FC = () => {
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="subtitle1" color="text.secondary">Target Community:</Typography>
-                <a 
+                <a
                   href={`https://www.reddit.com/r/${report.inputData.community}/`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -236,17 +235,17 @@ const ReportDetails: React.FC = () => {
                         Sentiment Analysis
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                        <Chip 
+                        <Chip
                           label={`Positive: ${item.emotions.positive}`}
                           color="success"
                           size="small"
                         />
-                        <Chip 
+                        <Chip
                           label={`Negative: ${item.emotions.negative}`}
                           color="error"
                           size="small"
                         />
-                        <Chip 
+                        <Chip
                           label={`Neutral: ${item.emotions.neutral}`}
                           color="default"
                           size="small"
@@ -451,4 +450,4 @@ const ReportDetails: React.FC = () => {
   );
 };
 
-export default ReportDetails; 
+export default ReportDetails;
