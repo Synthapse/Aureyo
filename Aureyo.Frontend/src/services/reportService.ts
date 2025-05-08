@@ -21,8 +21,50 @@ export const generateGoToMarketReport = async (data: GoToMarketReport) => {
 };
 
 export const generateRedditAudienceReport = async (community: string) => {
-  const data = { community };
-  const response = await axios.post(`${MAS_BASE_URL}/analysis/community?community=${community}`, data);
-  //const response = await axios.post(`https://mas-backend-946555989276.europe-central2.run.app/analysis/community?community=${community}`, )
-  return response.data;
+  const url1 = `${MAS_BASE_URL}/analysis/community?community=${community}`
+  const url = `http://localhost:8000/analysis/community?community=${community}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ community }),
+    });
+
+    console.log(response);
+    // Check if the response is successful
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const reader = response?.body?.getReader();
+    const decoder = new TextDecoder();
+    let result = '';
+
+    // Process the stream chunks
+    while (true) {
+      //@ts-ignore
+      const { done, value } = await reader?.read();
+      if (done) {
+        break; // End of stream
+      }
+      console.log(value);
+      console.log(done, value);
+      result += decoder.decode(value, { stream: true });
+    }
+
+    // Parse the final result (the complete JSON string)
+    const reports = JSON.parse(result);
+
+    return {
+      "pdf_document": null,
+      "text_content": reports,
+    };
+
+  } catch (error) {
+    console.error('Error generating Reddit audience report:', error);
+    throw error;
+  }
 };

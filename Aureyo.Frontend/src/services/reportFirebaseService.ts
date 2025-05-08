@@ -6,12 +6,27 @@ export interface Report {
   id: string;
   type: ReportType;
   inputData: any;
-  data: MarketingStrategyReport | EarlyAdaptersDesignReport | GoToMarketReport;
+  data: MarketingStrategyReport | EarlyAdaptersDesignReport | GoToMarketReport | any;
   createdAt: Date;
   status: 'completed' | 'pending' | 'failed';
   public: boolean;
   authorId: string;
 }
+
+export interface RedditAudienceReport {
+  username: string;
+  analysis_date: string; // ISO datetime string
+  sentiment: string; // e.g., "Positive"
+  emotions: {
+    positive: number;
+    negative: number;
+    neutral: number;
+  };
+  personality: string; // Markdown-style analysis text
+  top_upvoted_comments: string[];
+  topics: string[]; // List of topic summaries
+}
+
 
 export const getReports = async (): Promise<Report[]> => {
   const reportsRef = collection(db, 'reports');

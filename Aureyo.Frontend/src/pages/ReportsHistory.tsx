@@ -59,6 +59,7 @@ const ReportsHistory: React.FC = () => {
   const fetchReports = async () => {
     try {
       const fetchedReports = await getReports();
+      console.log(fetchedReports);
       setReports(fetchedReports);
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -77,6 +78,7 @@ const ReportsHistory: React.FC = () => {
       timeStyle: 'short',
     }).format(date);
   };
+
 
   return (
     <Box sx={{ bgcolor: 'background.default' }}>
@@ -135,16 +137,16 @@ const ReportsHistory: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {reports.map((report) => (
-                  <TableRow 
+                {reports.map((report: any) => (
+                  <TableRow
                     key={report.id}
                     hover
                     sx={{ cursor: 'pointer' }}
                     onClick={() => handleViewReport(report.id)}
                   >
-                    <TableCell>{report.data?.title}</TableCell>
+                    <TableCell>{report.inputData?.title}</TableCell>
                     <TableCell>
-                      {report.type?.split('-').map(word => 
+                      {report.type?.split('-').map((word: any) =>
                         word.charAt(0).toUpperCase() + word.slice(1)
                       ).join(' ')}
                     </TableCell>
