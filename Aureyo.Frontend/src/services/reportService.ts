@@ -21,6 +21,6 @@ export const generateGoToMarketReport = async (data: GoToMarketReport) => {
 };
 
 export const generateRedditAudienceReport = async (data: RedditAudienceReport) => {
-  const response = await axios.post(`${MAS_BASE_URL}/reddit-audience`, data);
+  const response = await axios.post(`${MAS_BASE_URL}/analysis/community`, data);
   return response.data;
 }; 

@@ -9,6 +9,8 @@ export interface Report {
   data: MarketingStrategyReport | EarlyAdaptersDesignReport | GoToMarketReport;
   createdAt: Date;
   status: 'completed' | 'pending' | 'failed';
+  public: boolean;
+  authorEmail: string;
 }
 
 export const getReports = async (): Promise<Report[]> => {
@@ -26,7 +28,8 @@ export const getReports = async (): Promise<Report[]> => {
         data: data.reportText,
         createdAt: (data.createdAt as Timestamp).toDate(),
         status: data.status,
-        public: data.public, // Assuming the field is called `public`
+        public: data.public || false,
+        authorEmail: data.authorEmail || '',
       };
     })
     .filter(report => report.public); // Only return reports where public is true
@@ -49,6 +52,8 @@ export const getReportById = async (id: string): Promise<Report | null> => {
       inputData: data.inputData,
       createdAt: (data.createdAt as Timestamp).toDate(),
       status: data.status,
+      public: data.public || false,
+      authorEmail: data.authorEmail || '',
     };
   } catch (error) {
     console.error('Error fetching report by ID:', error);

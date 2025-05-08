@@ -164,6 +164,7 @@ const Profile: React.FC = () => {
               </Typography>
               <List>
                 {userActivity.map((activity) => (
+                  <a href ={`#/reports/${activity.reportId}`} key={activity.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                   <ListItem key={activity.id}>
                     <ListItemIcon>
                       <HistoryIcon color="primary" />
@@ -173,6 +174,7 @@ const Profile: React.FC = () => {
                       secondary={formatDate(activity.createdAt)}
                     />
                   </ListItem>
+                  </a>
                 ))}
               </List>
             </ProfileCard>

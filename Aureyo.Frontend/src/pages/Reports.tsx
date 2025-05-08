@@ -138,13 +138,13 @@ const Reports: React.FC = () => {
   const getReportTitle = (type: ReportType, data: any) => {
     switch (type) {
       case 'marketing-strategy':
-        return `Marketing Strategy for ${data.targetAudience || 'Target Audience'}`;
+        return `Marketing Strategy for ${data.inputData.title || 'Target Audience'}`;
       case 'go-to-market':
-        return `Go-to-Market Plan for ${data.productName || 'Product'}`;
+        return `Go-to-Market Plan for ${data.inputData.title || 'Product'}`;
       case 'early-adapters':
-        return `Early Adopters Analysis for ${data.targetMarket || 'Target Market'}`;
+        return `Early Adopters Analysis for ${data.inputData.title || 'Target Market'}`;
       case 'reddit-audience':
-        return `Reddit Audience Analysis for ${data.community || 'Community'}`;
+        return `Reddit Audience Analysis for ${data.inputData.title || 'Community'}`;
       default:
         return 'Report';
     }
@@ -191,6 +191,7 @@ const Reports: React.FC = () => {
         inputData: data,
         reportText: response.text_content || "",
         createdAt: Timestamp.now(),
+        authorId: auth.currentUser?.uid,
         status: 'completed',
         public: false,
       });

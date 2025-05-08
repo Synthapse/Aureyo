@@ -14,12 +14,16 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Report, getReportById } from '../services/reportFirebaseService';
 import { parseStructuredTextWithTables } from 'utils';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db, auth } from '../firebase';
 
 const PageContainer = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.background.default,
@@ -36,6 +40,8 @@ const ReportDetails: React.FC = () => {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPublic, setIsPublic] = useState(false);
+  const [isAuthor, setIsAuthor] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
@@ -59,12 +65,33 @@ const ReportDetails: React.FC = () => {
         setError('Report not found');
       } else {
         setReport(reportData);
+        setIsPublic(reportData.public || false);
+        // Check if current user is the author
+        const currentUser = auth.currentUser;
+        setIsAuthor(currentUser?.email === reportData.authorEmail);
       }
     } catch (error) {
       setError('Error loading report details');
       console.error('Error fetching report details:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePublicToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!id) return;
+    
+    const newPublicState = event.target.checked;
+    try {
+      const reportRef = doc(db, 'reports', id);
+      await updateDoc(reportRef, {
+        public: newPublicState
+      });
+      setIsPublic(newPublicState);
+    } catch (error) {
+      console.error('Error updating report visibility:', error);
+      // Revert the switch state if update fails
+      setIsPublic(!newPublicState);
     }
   };
 
@@ -106,9 +133,23 @@ const ReportDetails: React.FC = () => {
       {renderBackButton()}
 
       <DetailsPaper>
-        <Typography variant="h4" gutterBottom color="primary">
-          {report.data.title}
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h4" color="primary">
+            {report.data.title}
+          </Typography>
+          {isAuthor && (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isPublic}
+                  onChange={handlePublicToggle}
+                  color="primary"
+                />
+              }
+              label="Make Public"
+            />
+          )}
+        </Box>
         {report?.inputData && (
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -118,9 +159,7 @@ const ReportDetails: React.FC = () => {
               {Object.entries(report.inputData).map(([key, value]) => (
                 <ListItem key={key} sx={{ display: 'list-item', pl: 2 }}>
                   <Typography variant="body2">
-                    <>
-                      <strong>{key}:</strong> {value}
-                    </>
+                    <strong>{key}:</strong> {String(value)}
                   </Typography>
                 </ListItem>
               ))}
