@@ -38,7 +38,7 @@ jobs:
         env:
           apps.PaymentAPI.url: ${{ env.PAYMENT_API_URL }}
           apps.RaportingAPI.url: ${{ env.RAPORTING_API_URL }}
-          apps.MASAPI.url: ${{ env.RAPORTING_API_URL }}
+          apps.MASAPI.url: ${{ env.MAS_API }}
 
       - name: Read config.json from VoiceSense.Front
         run: 'cat Aureyo.Frontend/src/config.json'
