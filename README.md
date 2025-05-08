@@ -12,12 +12,11 @@ subscription ->
 
 
 
-
 ```mermaid
 flowchart TD
     A[Aureyo] --> B[Raporting API]
     A --> C[MAS API]
-    A --> D[Payment API (Stripe)] 
+    A --> D[Payment API] 
 
     B --> B1[Marketing Strategy]
     B --> B2[Go To Market Strategy]
