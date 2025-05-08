@@ -5,10 +5,10 @@ Aureyo is a powerful marketing tool designed for audience research and analysis.
 
 Tables in Firebase:
 
-userActivities -> 
-userPoints ->
-reports -> 
-subscription -> 
+- userActivities -> Recent activities for generated reports (future notification)
+- userPoints -> Points for each user (which he bought)
+- reports (saving every raports)
+- subscription -> All subscription which are buying
 
 
 
