@@ -68,7 +68,7 @@ const ReportDetails: React.FC = () => {
         setIsPublic(reportData.public || false);
         // Check if current user is the author
         const currentUser = auth.currentUser;
-        setIsAuthor(currentUser?.email === reportData.authorEmail);
+        setIsAuthor(currentUser?.uid === reportData.authorId);
       }
     } catch (error) {
       setError('Error loading report details');
@@ -80,7 +80,7 @@ const ReportDetails: React.FC = () => {
 
   const handlePublicToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!id) return;
-    
+
     const newPublicState = event.target.checked;
     try {
       const reportRef = doc(db, 'reports', id);
@@ -126,7 +126,48 @@ const ReportDetails: React.FC = () => {
   }
 
 
-  console.log(report);
+  const getFileName = () => {
+    const type = report.type;
+    const date = new Date(report.createdAt);
+
+    let typeFileName = "";
+
+    if (type === "marketing-strategy") {
+      typeFileName = "marketing_strategy";
+    } else if (type === "early-adapters") {
+      typeFileName = "early_adopter_strategy";
+    } else if (type === "go-to-market") {
+      typeFileName = "gtm_strategy";
+    }
+
+    // Format date: YYYYMMDD_HHMMSS
+    const iso = date.toISOString(); // e.g. "2025-05-08T15:43:12.345Z"
+
+    const datePart = iso.slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+    const timePart = iso.slice(11, 19).replace(/:/g, ''); // HHMMSS
+
+
+    // 08.05.2025 -> Probably should be fixed in the source (mean file saving in Raporting.API)
+    // Subtract 1 from seconds
+    let hh = parseInt(timePart.slice(0, 2), 10);
+    let mm = parseInt(timePart.slice(2, 4), 10);
+    let ss = parseInt(timePart.slice(4, 6), 10) - 1;
+
+    // Handle underflow (e.g., 00:00:00 becomes 23:59:59)
+    if (ss < 0) {
+      ss = 59;
+      mm -= 1;
+      if (mm < 0) {
+        mm = 59;
+        hh -= 1;
+        if (hh < 0) hh = 23;
+      }
+    }
+
+    const hhmmss = `${hh.toString().padStart(2, '0')}${mm.toString().padStart(2, '0')}${ss.toString().padStart(2, '0')}`;
+    const filename = `${typeFileName}_${datePart}_${hhmmss}.pdf`;
+    return filename;
+  };
 
   return (
     <PageContainer>
@@ -137,6 +178,19 @@ const ReportDetails: React.FC = () => {
           <Typography variant="h4" color="primary">
             {report.data.title}
           </Typography>
+
+          {report.type != 'reddit-audience' &&
+            <a
+              href={`https://storage.googleapis.com/authentic_scope_docs/${getFileName()}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Typography variant="h6" color="primary">
+                Download file
+              </Typography>
+            </a>
+          }
+
           {isAuthor && (
             <FormControlLabel
               control={

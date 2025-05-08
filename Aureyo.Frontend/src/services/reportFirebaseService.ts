@@ -10,7 +10,7 @@ export interface Report {
   createdAt: Date;
   status: 'completed' | 'pending' | 'failed';
   public: boolean;
-  authorEmail: string;
+  authorId: string;
 }
 
 export const getReports = async (): Promise<Report[]> => {
@@ -29,7 +29,7 @@ export const getReports = async (): Promise<Report[]> => {
         createdAt: (data.createdAt as Timestamp).toDate(),
         status: data.status,
         public: data.public || false,
-        authorEmail: data.authorEmail || '',
+        authorId: data.authorId || '',
       };
     })
     .filter(report => report.public); // Only return reports where public is true
@@ -53,7 +53,7 @@ export const getReportById = async (id: string): Promise<Report | null> => {
       createdAt: (data.createdAt as Timestamp).toDate(),
       status: data.status,
       public: data.public || false,
-      authorEmail: data.authorEmail || '',
+      authorId: data.authorId || '',
     };
   } catch (error) {
     console.error('Error fetching report by ID:', error);

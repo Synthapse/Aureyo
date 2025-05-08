@@ -181,7 +181,7 @@ const Reports: React.FC = () => {
           response = await reportService.generateGoToMarketReport(data);
           break;
         case 'reddit-audience':
-          response = await reportService.generateRedditAudienceReport(data);
+          response = await reportService.generateRedditAudienceReport(data.community);
           break;
       }
 

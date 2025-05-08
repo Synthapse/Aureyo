@@ -20,7 +20,9 @@ export const generateGoToMarketReport = async (data: GoToMarketReport) => {
   return response.data;
 };
 
-export const generateRedditAudienceReport = async (data: RedditAudienceReport) => {
-  const response = await axios.post(`${MAS_BASE_URL}/analysis/community`, data);
+export const generateRedditAudienceReport = async (community: string) => {
+  const data = { community };
+  const response = await axios.post(`${MAS_BASE_URL}/analysis/community?community=${community}`, data);
+  //const response = await axios.post(`https://mas-backend-946555989276.europe-central2.run.app/analysis/community?community=${community}`, )
   return response.data;
-}; 
+};
