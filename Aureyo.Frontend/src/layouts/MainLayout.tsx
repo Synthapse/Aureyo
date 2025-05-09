@@ -125,6 +125,7 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
 
   const navItems = [
     { label: 'Home', path: '/' },
+    { label: 'Features', path: '/features' },
     { label: 'Pricing', path: '/pricing' },
     ...(logged ? [
       { label: 'Generate', path: '/reports' },

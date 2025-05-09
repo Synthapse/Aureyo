@@ -13,6 +13,7 @@ import Pricing from 'pages/Pricing';
 import Profile from 'pages/Profile';
 import StripeSuccess from 'pages/StripeSuccess';
 import StripeCancel from 'pages/StripeCancel';
+import Features from 'pages/Features';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import theme from 'styles/theme';
 
@@ -28,6 +29,7 @@ root.render(
         <MainLayout>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/features" element={<Features />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/reports/history" element={<ReportsHistory />} />

@@ -21,6 +21,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { auth, googleProvider } from '../firebase';
 import { getUserActivities } from 'services/userActivityService';
 import { getUserPoints } from 'services/subscriptionService';
+import { getNotionData, getUsers } from 'notion';
 
 const PageHeader = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
@@ -89,6 +90,7 @@ const Profile: React.FC = () => {
     };
     fetchUserActivity();
     fetchPoints();
+    getNotionData();
   }, []);
 
 
