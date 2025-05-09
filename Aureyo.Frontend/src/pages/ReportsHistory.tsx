@@ -34,19 +34,6 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
 }));
 
-const getStatusColor = (status: Report['status']) => {
-  switch (status) {
-    case 'completed':
-      return 'success';
-    case 'pending':
-      return 'warning';
-    case 'failed':
-      return 'error';
-    default:
-      return 'default';
-  }
-};
-
 const ReportsHistory: React.FC = () => {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,7 +109,16 @@ const ReportsHistory: React.FC = () => {
 
       <Container maxWidth="xl">
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 8 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Good things take time ☕
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
+              We're brewing your results — it might take a minute or two.
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 4, color: 'text.secondary', fontStyle: 'italic' }}>
+              Perfect time to stretch or make yourself a fresh cup of coffee.
+            </Typography>
             <CircularProgress />
           </Box>
         ) : (

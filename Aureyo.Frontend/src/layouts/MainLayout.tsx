@@ -15,8 +15,8 @@ import {
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { styled } from '@mui/material/styles';
-import { auth } from '../firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth, googleProvider } from '../firebase';
+import { browserLocalPersistence, fetchSignInMethodsForEmail, onAuthStateChanged, setPersistence, signInWithPopup, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 
@@ -121,6 +121,35 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
     });
   }, []);
 
+  const signInWithGoogle = async () => {
+    try {
+      setPersistence(auth, browserLocalPersistence)
+        .then(async () => {
+          const signInCredentials = await signInWithPopup(auth, googleProvider);
+
+          // Get the user's email
+          const userEmail = signInCredentials.user.email;
+
+          if (userEmail) {
+            const signInMethods = await fetchSignInMethodsForEmail(auth, userEmail);
+            const hasPassword = signInMethods.includes("password");
+
+            if (auth) {
+              navigate('/profile')
+            }
+          }
+
+          return signInCredentials;
+        })
+        .catch((error) => {
+          // Handle Errors here.
+          const errorCode = error.code;
+          const errorMessage = error.message;
+        });
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
 
   const navItems = [
@@ -186,7 +215,7 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
                     <MenuItem
                       component={RouterLink}
                       to="/"
-                      onClick={handleMobileMenuClose}
+                      onClick={signInWithGoogle}
                     >
                       Sign In
                     </MenuItem>
@@ -235,6 +264,7 @@ const MainLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
                     to="/"
                     variant="contained"
                     color="primary"
+                    onClick={signInWithGoogle}
                   >
                     Sign In
                   </Button>

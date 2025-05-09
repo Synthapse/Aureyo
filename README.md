@@ -24,3 +24,25 @@ flowchart TD
 
     C --> C1[Reddit Audience Generation]
 ```
+
+🗂 Serverless node.js function
+
+- mkdir my-lambda-function
+- cd my-lambda-function
+- npm init -y
+- Create an index.js file:
+
+
+Notion Integration:
+
+https://us-central1-voicesense.cloudfunctions.net/getNotionData
+
+
+
+gcloud functions deploy getNotionData \
+  --runtime nodejs18 \
+  --trigger-http \
+  --allow-unauthenticated \
+  --env-vars-file env.yaml
+
+
