@@ -21,8 +21,8 @@ export const generateGoToMarketReport = async (data: GoToMarketReport) => {
 };
 
 export const generateRedditAudienceReport = async (community: string) => {
-  const url1 = `${MAS_BASE_URL}/analysis/community?community=${community}`
-  const url = `http://localhost:8000/analysis/community?community=${community}`;
+  const url = `${MAS_BASE_URL}/analysis/community?community=${community}`
+  //const url = `http://localhost:8000/analysis/community?community=${community}`;
 
   try {
     const response = await fetch(url, {
